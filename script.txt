@@ -1,4 +1,4 @@
--- // FLEEXI v1.3 - Ultimate Edition (All Fixes)
+-- // FLEEXI v1.3 - Ultimate Edition (Fixed: Crosshair, Hands, Sky)
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
@@ -20,6 +20,7 @@ local defaultFogEnd = Lighting.FogEnd
 local defaultFogStart = Lighting.FogStart
 local defaultCSTop = Lighting.ColorShift_Top
 local defaultCSBot = Lighting.ColorShift_Bottom
+local defaultClockTime = Lighting.ClockTime
 
 local Settings = {
     Aimbot = {
@@ -279,7 +280,7 @@ UserInputService.InputBegan:Connect(function(inp,gpe) if gpe then return end; if
 UserInputService.InputEnded:Connect(function(inp) if inp.KeyCode==Enum.KeyCode.E and Settings.Aimbot.Mode=="Hold" then holdActive=false end end)
 local function updateAimBtnVis() AimHoldBtn.Visible=Settings.Aimbot.Enabled and (Settings.Aimbot.Mode=="Hold" or Settings.Aimbot.Mode=="Toggle") end
 
--- AIM MODE BUTTON (NEW)
+-- AIM MODE BUTTON
 local aimModeNames = {Always="ALL", Toggle="TGL", Hold="HLD"}
 local aimModeOrder = {"Always","Toggle","Hold"}
 local AimModeBtn=Instance.new("TextButton",ScreenGui)
@@ -461,6 +462,9 @@ local function closePicker() PickerOverlay.Visible=false; activePicker=nil end; 
 local function openPicker(setter,initial) activePicker={setter=setter}; rVal=math.floor(initial.R*255); gVal=math.floor(initial.G*255); bVal=math.floor(initial.B*255); setR(rVal); setG(gVal); setB(bVal); PickerOverlay.Visible=true end
 local function MakeColorBtn(parent,labelKey,initial,callback,order) local frame=Instance.new("Frame",parent); frame.BackgroundColor3=Settings.Settings.GuiBtnColor; frame.BackgroundTransparency=0.1; frame.BorderSizePixel=0; frame.LayoutOrder=order or 0; frame.ZIndex=101; Instance.new("UICorner",frame).CornerRadius=UDim.new(0,9); Instance.new("UIStroke",frame).Color=Settings.Settings.GuiBorderColor; local lbl=Instance.new("TextLabel",frame); lbl.Size=UDim2.new(1,-56,1,0); lbl.Position=UDim2.new(0,10,0,0); lbl.BackgroundTransparency=1; lbl.TextColor3=Settings.Settings.GuiTextColor; lbl.Font=Enum.Font.GothamMedium; lbl.TextSize=10; lbl.TextXAlignment=Enum.TextXAlignment.Left; lbl.ZIndex=102; registerText(lbl,labelKey); local cbtn=Instance.new("TextButton",frame); cbtn.Size=UDim2.new(0,36,0,20); cbtn.Position=UDim2.new(1,-42,0.5,-10); cbtn.BackgroundColor3=initial; cbtn.Text=""; cbtn.AutoButtonColor=false; cbtn.ZIndex=103; Instance.new("UICorner",cbtn).CornerRadius=UDim.new(0,5); Instance.new("UIStroke",cbtn).Color=Color3.fromRGB(180,100,220); cbtn.MouseButton1Click:Connect(function() openPicker(function(col) cbtn.BackgroundColor3=col; callback(col) end,cbtn.BackgroundColor3) end) end
 
+-- Forward declare handsResetAll
+local handsResetAll
+
 -- ===== ALL PANELS =====
 -- AIM
 MakeToggle(AimPanel,"aimbot_on",false,function(v) Settings.Aimbot.Enabled=v; updateAimBtnVis(); updateAimModeBtnVis() end,1)
@@ -500,10 +504,13 @@ MakeSlider(MiscPanel,"misc_fov",30,120,70,"",function(v) Settings.Misc.FOV=v end
 MakeToggle(MiscPanel,"force_tp",false,function(v) Settings.Misc.ForceThirdPerson=v end,3)
 MakeToggle(MiscPanel,"bhop",false,function(v) Settings.Misc.Bhop=v end,4)
 MakeToggle(MiscPanel,"antiafk",false,function(v) Settings.Misc.AntiAFK=v end,5)
-MakeToggle(MiscPanel,"hands_on",false,function(v) Settings.Misc.HandsEnabled=v; if not v then handsResetAll() end end,6)
+MakeToggle(MiscPanel,"hands_on",false,function(v) Settings.Misc.HandsEnabled=v; if not v and handsResetAll then handsResetAll() end end,6)
 MakeSlider(MiscPanel,"hands_x",-50,50,0,"",function(v) Settings.Misc.HandsX=v end,7)
 MakeSlider(MiscPanel,"hands_y",-50,50,0,"",function(v) Settings.Misc.HandsY=v end,8)
 MakeSlider(MiscPanel,"hands_z",-50,50,0,"",function(v) Settings.Misc.HandsZ=v end,9)
+
+-- Forward declare resetWorldPartColors
+local resetWorldPartColors
 
 -- WORLD
 MakeToggle(WorldPanel,"world_ambient_on",false,function(v) Settings.World.AmbientEnabled=v; if not v then pcall(function() Lighting.Ambient=defaultAmbient; Lighting.OutdoorAmbient=defaultOutdoorAmbient end) end end,1)
@@ -513,16 +520,13 @@ MakeToggle(WorldPanel,"world_sky_on",false,function(v)
         pcall(function()
             Lighting.FogColor=defaultFogColor; Lighting.FogEnd=defaultFogEnd; Lighting.FogStart=defaultFogStart
             Lighting.ColorShift_Top=defaultCSTop; Lighting.ColorShift_Bottom=defaultCSBot
-            for _,child in ipairs(Lighting:GetChildren()) do
-                if child:IsA("Sky") and child.Name=="FleexiSky" then child:Destroy() end
-            end
-            for _,child in ipairs(Lighting:GetChildren()) do
-                if child:IsA("Atmosphere") and child.Name=="FleexiAtmo" then child:Destroy() end
-            end
+            Lighting.ClockTime=defaultClockTime
+            local atmo = Lighting:FindFirstChild("FleexiAtmo")
+            if atmo then atmo:Destroy() end
         end)
     end
 end,2)
-MakeToggle(WorldPanel,"world_parts",false,function(v) Settings.World.ChangePartColors=v end,3)
+MakeToggle(WorldPanel,"world_parts",false,function(v) Settings.World.ChangePartColors=v; if not v and resetWorldPartColors then resetWorldPartColors() end end,3)
 MakeToggle(WorldPanel,"world_rain",false,function(v) Settings.World.Rain=v end,4)
 MakeToggle(WorldPanel,"world_snow",false,function(v) Settings.World.Snow=v end,5)
 MakeColorBtn(WorldPanel,"world_ambient",Settings.World.AmbientColor,function(c) Settings.World.AmbientColor=c end,6)
@@ -533,13 +537,14 @@ MakeButton(WorldPanel,"world_reset",function()
         Lighting.Ambient=defaultAmbient; Lighting.OutdoorAmbient=defaultOutdoorAmbient
         Lighting.FogColor=defaultFogColor; Lighting.FogEnd=defaultFogEnd; Lighting.FogStart=defaultFogStart
         Lighting.ColorShift_Top=defaultCSTop; Lighting.ColorShift_Bottom=defaultCSBot
-        for _,child in ipairs(Lighting:GetChildren()) do
-            if (child:IsA("Sky") and child.Name=="FleexiSky") or (child:IsA("Atmosphere") and child.Name=="FleexiAtmo") then child:Destroy() end
-        end
+        Lighting.ClockTime=defaultClockTime
+        local atmo = Lighting:FindFirstChild("FleexiAtmo")
+        if atmo then atmo:Destroy() end
     end)
+    if resetWorldPartColors then resetWorldPartColors() end
 end,8)
 
--- SHORTCUTS (with Aim Mode button + Toggle btn settings + AimHold settings)
+-- SHORTCUTS
 MakeToggle(ShortcutPanel,"sc_aim_btn",false,function(v) Settings.Shortcuts.AimBtn=v; scAimBtn.Visible=v end,1)
 MakeToggle(ShortcutPanel,"sc_esp_btn",false,function(v) Settings.Shortcuts.EspBtn=v; scEspBtn.Visible=v end,2)
 MakeToggle(ShortcutPanel,"sc_bhop_btn",false,function(v) Settings.Shortcuts.BhopBtn=v; scBhopBtn.Visible=v end,3)
@@ -582,10 +587,106 @@ execRunBtn.MouseButton1Click:Connect(function()
 end)
 execClearBtn.MouseButton1Click:Connect(function() execInput.Text=""; execOutput.Text="" end)
 
--- ===== CROSSHAIR =====
+-- ===== CROSSHAIR (FIXED) =====
 local crosshairParts={}; for i=1,30 do local f=Instance.new("Frame",CrosshairContainer); f.BackgroundColor3=Color3.fromRGB(0,255,0); f.BorderSizePixel=0; f.ZIndex=55; f.Visible=false; crosshairParts[i]=f end
 local chDot=Instance.new("Frame",CrosshairContainer); chDot.BackgroundColor3=Color3.fromRGB(0,255,0); chDot.BorderSizePixel=0; chDot.AnchorPoint=Vector2.new(0.5,0.5); chDot.ZIndex=56; chDot.Visible=false; Instance.new("UICorner",chDot).CornerRadius=UDim.new(1,0)
-RunService.RenderStepped:Connect(function() for i=1,30 do crosshairParts[i].Visible=false end; chDot.Visible=false; local ch=Settings.Crosshair; if not ch.Enabled then return end; local vp=Camera.ViewportSize; local cx=math.floor(vp.X/2)+ch.OffsetX; local cy=math.floor(vp.Y/2)+ch.OffsetY; local sz=ch.Size; local tk=ch.Thickness; local gap=ch.Gap; local col=ch.Color; if ch.Style=="Cross" then crosshairParts[1].Size=UDim2.new(0,tk,0,sz); crosshairParts[1].Position=UDim2.new(0,cx-math.floor(tk/2),0,cy-gap-sz); crosshairParts[1].BackgroundColor3=col; crosshairParts[1].Visible=true; crosshairParts[2].Size=UDim2.new(0,tk,0,sz); crosshairParts[2].Position=UDim2.new(0,cx-math.floor(tk/2),0,cy+gap); crosshairParts[2].BackgroundColor3=col; crosshairParts[2].Visible=true; crosshairParts[3].Size=UDim2.new(0,sz,0,tk); crosshairParts[3].Position=UDim2.new(0,cx-gap-sz,0,cy-math.floor(tk/2)); crosshairParts[3].BackgroundColor3=col; crosshairParts[3].Visible=true; crosshairParts[4].Size=UDim2.new(0,sz,0,tk); crosshairParts[4].Position=UDim2.new(0,cx+gap,0,cy-math.floor(tk/2)); crosshairParts[4].BackgroundColor3=col; crosshairParts[4].Visible=true; if ch.Outline then for j=1,4 do local o=crosshairParts[j+4]; local s=crosshairParts[j]; o.Size=UDim2.new(0,s.Size.X.Offset+2,0,s.Size.Y.Offset+2); o.Position=UDim2.new(0,s.Position.X.Offset-1,0,s.Position.Y.Offset-1); o.BackgroundColor3=Color3.fromRGB(0,0,0); o.ZIndex=54; o.Visible=true end end elseif ch.Style=="Circle" then for i2=1,24 do local a1=(i2-1)/24*math.pi*2; local a2=i2/24*math.pi*2; local x1=cx+math.cos(a1)*sz; local y1=cy+math.sin(a1)*sz; local x2=cx+math.cos(a2)*sz; local y2=cy+math.sin(a2)*sz; local dx=x2-x1; local dy=y2-y1; local len=math.sqrt(dx*dx+dy*dy); local f=crosshairParts[i2]; if f then f.AnchorPoint=Vector2.new(0.5,0.5); f.Size=UDim2.new(0,math.ceil(len+1),0,tk); f.Position=UDim2.new(0,(x1+x2)/2,0,(y1+y2)/2); f.Rotation=math.deg(math.atan2(dy,dx)); f.BackgroundColor3=col; f.ZIndex=55; f.Visible=true end end elseif ch.Style=="Dot" then chDot.Size=UDim2.new(0,sz,0,sz); chDot.Position=UDim2.new(0,cx,0,cy); chDot.BackgroundColor3=col; chDot.Visible=true; return elseif ch.Style=="Arrows" then crosshairParts[1].Size=UDim2.new(0,tk,0,sz); crosshairParts[1].Position=UDim2.new(0,cx-math.floor(tk/2),0,cy-gap-sz); crosshairParts[1].BackgroundColor3=col; crosshairParts[1].Visible=true; crosshairParts[2].Size=UDim2.new(0,math.floor(sz*0.6),0,tk); crosshairParts[2].Position=UDim2.new(0,cx-math.floor(sz*0.3),0,cy-gap-sz); crosshairParts[2].BackgroundColor3=col; crosshairParts[2].Visible=true; crosshairParts[3].Size=UDim2.new(0,tk,0,sz); crosshairParts[3].Position=UDim2.new(0,cx-math.floor(tk/2),0,cy+gap); crosshairParts[3].BackgroundColor3=col; crosshairParts[3].Visible=true; crosshairParts[4].Size=UDim2.new(0,math.floor(sz*0.6),0,tk); crosshairParts[4].Position=UDim2.new(0,cx-math.floor(sz*0.3),0,cy+gap+sz-tk); crosshairParts[4].BackgroundColor3=col; crosshairParts[4].Visible=true; crosshairParts[5].Size=UDim2.new(0,sz,0,tk); crosshairParts[5].Position=UDim2.new(0,cx-gap-sz,0,cy-math.floor(tk/2)); crosshairParts[5].BackgroundColor3=col; crosshairParts[5].Visible=true; crosshairParts[6].Size=UDim2.new(0,tk,0,math.floor(sz*0.6)); crosshairParts[6].Position=UDim2.new(0,cx-gap-sz,0,cy-math.floor(sz*0.3)); crosshairParts[6].BackgroundColor3=col; crosshairParts[6].Visible=true; crosshairParts[7].Size=UDim2.new(0,sz,0,tk); crosshairParts[7].Position=UDim2.new(0,cx+gap,0,cy-math.floor(tk/2)); crosshairParts[7].BackgroundColor3=col; crosshairParts[7].Visible=true; crosshairParts[8].Size=UDim2.new(0,tk,0,math.floor(sz*0.6)); crosshairParts[8].Position=UDim2.new(0,cx+gap+sz-tk,0,cy-math.floor(sz*0.3)); crosshairParts[8].BackgroundColor3=col; crosshairParts[8].Visible=true elseif ch.Style=="Square" then crosshairParts[1].Size=UDim2.new(0,sz*2,0,tk); crosshairParts[1].Position=UDim2.new(0,cx-sz,0,cy-sz); crosshairParts[1].BackgroundColor3=col; crosshairParts[1].Visible=true; crosshairParts[2].Size=UDim2.new(0,sz*2,0,tk); crosshairParts[2].Position=UDim2.new(0,cx-sz,0,cy+sz-tk); crosshairParts[2].BackgroundColor3=col; crosshairParts[2].Visible=true; crosshairParts[3].Size=UDim2.new(0,tk,0,sz*2); crosshairParts[3].Position=UDim2.new(0,cx-sz,0,cy-sz); crosshairParts[3].BackgroundColor3=col; crosshairParts[3].Visible=true; crosshairParts[4].Size=UDim2.new(0,tk,0,sz*2); crosshairParts[4].Position=UDim2.new(0,cx+sz-tk,0,cy-sz); crosshairParts[4].BackgroundColor3=col; crosshairParts[4].Visible=true; if ch.Outline then for j=1,4 do local o=crosshairParts[j+4]; local s=crosshairParts[j]; o.Size=UDim2.new(0,s.Size.X.Offset+2,0,s.Size.Y.Offset+2); o.Position=UDim2.new(0,s.Position.X.Offset-1,0,s.Position.Y.Offset-1); o.BackgroundColor3=Color3.fromRGB(0,0,0); o.ZIndex=54; o.Visible=true end end end; if ch.Dot and ch.Style~="Dot" then chDot.Size=UDim2.new(0,ch.DotSize,0,ch.DotSize); chDot.Position=UDim2.new(0,cx,0,cy); chDot.BackgroundColor3=col; chDot.Visible=true end end)
+RunService.RenderStepped:Connect(function()
+    for i=1,30 do
+        crosshairParts[i].Visible=false
+        crosshairParts[i].Rotation=0
+        crosshairParts[i].AnchorPoint=Vector2.new(0,0)
+    end
+    chDot.Visible=false
+    local ch=Settings.Crosshair
+    if not ch.Enabled then return end
+    local vp=Camera.ViewportSize
+    local cx=math.floor(vp.X/2)+ch.OffsetX
+    local cy=math.floor(vp.Y/2)+ch.OffsetY
+    local sz=ch.Size; local tk=ch.Thickness; local gap=ch.Gap; local col=ch.Color
+
+    local function drawLine(idx,x,y,w,h)
+        local f=crosshairParts[idx]
+        f.AnchorPoint=Vector2.new(0,0)
+        f.Size=UDim2.new(0,w,0,h)
+        f.Position=UDim2.new(0,x,0,y)
+        f.Rotation=0
+        f.BackgroundColor3=col
+        f.ZIndex=55
+        f.Visible=true
+    end
+    local function drawOutline(srcIdx,dstIdx)
+        local s=crosshairParts[srcIdx]
+        local o=crosshairParts[dstIdx]
+        o.AnchorPoint=Vector2.new(0,0)
+        o.Size=UDim2.new(0,s.Size.X.Offset+2,0,s.Size.Y.Offset+2)
+        o.Position=UDim2.new(0,s.Position.X.Offset-1,0,s.Position.Y.Offset-1)
+        o.Rotation=0
+        o.BackgroundColor3=Color3.fromRGB(0,0,0)
+        o.ZIndex=54
+        o.Visible=true
+    end
+
+    if ch.Style=="Cross" then
+        drawLine(1, cx-math.floor(tk/2), cy-gap-sz, tk, sz)
+        drawLine(2, cx-math.floor(tk/2), cy+gap, tk, sz)
+        drawLine(3, cx-gap-sz, cy-math.floor(tk/2), sz, tk)
+        drawLine(4, cx+gap, cy-math.floor(tk/2), sz, tk)
+        if ch.Outline then
+            drawOutline(1,5); drawOutline(2,6); drawOutline(3,7); drawOutline(4,8)
+        end
+
+    elseif ch.Style=="Circle" then
+        for i2=1,24 do
+            local a1=(i2-1)/24*math.pi*2
+            local a2=i2/24*math.pi*2
+            local x1=cx+math.cos(a1)*sz; local y1=cy+math.sin(a1)*sz
+            local x2=cx+math.cos(a2)*sz; local y2=cy+math.sin(a2)*sz
+            local dx=x2-x1; local dy=y2-y1
+            local len=math.sqrt(dx*dx+dy*dy)
+            local f=crosshairParts[i2]
+            f.AnchorPoint=Vector2.new(0.5,0.5)
+            f.Size=UDim2.new(0,math.ceil(len+1),0,tk)
+            f.Position=UDim2.new(0,(x1+x2)/2,0,(y1+y2)/2)
+            f.Rotation=math.deg(math.atan2(dy,dx))
+            f.BackgroundColor3=col
+            f.ZIndex=55
+            f.Visible=true
+        end
+
+    elseif ch.Style=="Dot" then
+        chDot.Size=UDim2.new(0,sz,0,sz)
+        chDot.Position=UDim2.new(0,cx,0,cy)
+        chDot.BackgroundColor3=col
+        chDot.Visible=true
+        return
+
+    elseif ch.Style=="Arrows" then
+        drawLine(1, cx-math.floor(tk/2), cy-gap-sz, tk, sz)
+        drawLine(2, cx-math.floor(sz*0.35), cy-gap-sz, math.floor(sz*0.7), tk)
+        drawLine(3, cx-math.floor(tk/2), cy+gap, tk, sz)
+        drawLine(4, cx-math.floor(sz*0.35), cy+gap+sz-tk, math.floor(sz*0.7), tk)
+        drawLine(5, cx-gap-sz, cy-math.floor(tk/2), sz, tk)
+        drawLine(6, cx-gap-sz, cy-math.floor(sz*0.35), tk, math.floor(sz*0.7))
+        drawLine(7, cx+gap, cy-math.floor(tk/2), sz, tk)
+        drawLine(8, cx+gap+sz-tk, cy-math.floor(sz*0.35), tk, math.floor(sz*0.7))
+
+    elseif ch.Style=="Square" then
+        drawLine(1, cx-sz, cy-sz, sz*2, tk)
+        drawLine(2, cx-sz, cy+sz-tk, sz*2, tk)
+        drawLine(3, cx-sz, cy-sz, tk, sz*2)
+        drawLine(4, cx+sz-tk, cy-sz, tk, sz*2)
+        if ch.Outline then
+            drawOutline(1,5); drawOutline(2,6); drawOutline(3,7); drawOutline(4,8)
+        end
+    end
+
+    if ch.Dot and ch.Style~="Dot" then
+        chDot.Size=UDim2.new(0,ch.DotSize,0,ch.DotSize)
+        chDot.Position=UDim2.new(0,cx,0,cy)
+        chDot.BackgroundColor3=col
+        chDot.Visible=true
+    end
+end)
 
 -- FOV
 local FOVFrame=Instance.new("Frame",FOVContainer); FOVFrame.BackgroundTransparency=1; FOVFrame.Size=UDim2.new(1,0,1,0); FOVFrame.ZIndex=50; FOVFrame.Visible=false; local FOV_SEGMENTS=60; local fovSegs={}; for i=1,FOV_SEGMENTS do local seg=Instance.new("Frame",FOVFrame); seg.BorderSizePixel=0; seg.AnchorPoint=Vector2.new(0.5,0.5); seg.ZIndex=50; fovSegs[i]=seg end; local fovFillFrame=Instance.new("Frame",FOVFrame); fovFillFrame.BackgroundColor3=Color3.fromRGB(130,0,255); fovFillFrame.BackgroundTransparency=0.85; fovFillFrame.AnchorPoint=Vector2.new(0.5,0.5); fovFillFrame.ZIndex=49; fovFillFrame.Visible=false; Instance.new("UICorner",fovFillFrame).CornerRadius=UDim.new(1,0)
@@ -618,7 +719,7 @@ RunService.Heartbeat:Connect(function()
     end
 end)
 
--- Anti-AFK (FIXED - Timer based, works reliably)
+-- Anti-AFK
 local antiAfkTimer = 0
 RunService.Heartbeat:Connect(function(dt)
     if not Settings.Misc.AntiAFK then
@@ -632,15 +733,13 @@ RunService.Heartbeat:Connect(function(dt)
             VirtualUser:CaptureController()
             VirtualUser:ClickButton2(Vector2.new(0, 0))
         end)
-        -- Also try keypress method
         pcall(function()
-            VirtualUser:SetKeyDown(0x77) -- W key
+            VirtualUser:SetKeyDown(0x77)
             task.wait(0.1)
             VirtualUser:SetKeyUp(0x77)
         end)
     end
 end)
--- Also catch Idled event as backup
 pcall(function()
     LocalPlayer.Idled:Connect(function()
         if Settings.Misc.AntiAFK then
@@ -682,82 +781,63 @@ RunService.Heartbeat:Connect(function()
     prevTPEnabled = Settings.Misc.ForceThirdPerson
 end)
 
--- HANDS (FIXED - proper Motor6D scanning for R6/R15)
-local originalC1s={}
-local handsSaved=false
+-- HANDS (FIXED v2 - Live motor tracking)
+local originalC1s = {}
 
-function handsResetAll()
-    for m,c1 in pairs(originalC1s) do
-        pcall(function() if m and m.Parent then m.C1=c1 end end)
+handsResetAll = function()
+    for m, c1 in pairs(originalC1s) do
+        pcall(function() if m and m.Parent then m.C1 = c1 end end)
     end
-    originalC1s={}
-    handsSaved=false
+    originalC1s = {}
 end
 
-LocalPlayer.CharacterAdded:Connect(function() handsSaved=false; originalC1s={} end)
-
-local armPartNamesR15 = {
-    RightUpperArm=true, RightLowerArm=true, RightHand=true,
-    LeftUpperArm=true, LeftLowerArm=true, LeftHand=true,
-}
-local armPartNamesR6 = {
-    ["Right Arm"]=true, ["Left Arm"]=true,
-}
-
-local function findArmMotors(char)
-    local motors = {}
-    -- Search all descendants for Motor6D joints
-    for _, desc in ipairs(char:GetDescendants()) do
-        if desc:IsA("Motor6D") then
-            local p1Name = desc.Part1 and desc.Part1.Name or ""
-            if armPartNamesR15[p1Name] or armPartNamesR6[p1Name] then
-                if not originalC1s[desc] then
-                    originalC1s[desc] = desc.C1
-                end
-                table.insert(motors, desc)
-            end
-        end
-    end
-    return motors
+local function isArmMotor(motor)
+    if not motor:IsA("Motor6D") then return false end
+    local p1 = motor.Part1
+    if not p1 then return false end
+    local n = p1.Name
+    return n=="RightUpperArm" or n=="RightLowerArm" or n=="RightHand"
+        or n=="LeftUpperArm"  or n=="LeftLowerArm"  or n=="LeftHand"
+        or n=="Right Arm"     or n=="Left Arm"
 end
 
-RunService.RenderStepped:Connect(function()
+LocalPlayer.CharacterAdded:Connect(function()
+    originalC1s = {}
+end)
+
+RunService.Heartbeat:Connect(function()
     if not Settings.Misc.HandsEnabled then return end
     local char = LocalPlayer.Character
     if not char then return end
 
-    -- Save and find motors
-    if not handsSaved then
-        findArmMotors(char)
-        handsSaved = true
+    for _, desc in ipairs(char:GetDescendants()) do
+        if desc:IsA("Motor6D") and isArmMotor(desc) then
+            if not originalC1s[desc] then
+                originalC1s[desc] = desc.C1
+            end
+        end
     end
 
-    -- If no motors found yet, try again
-    if next(originalC1s) == nil then
-        findArmMotors(char)
-        if next(originalC1s) == nil then return end
-    end
-
-    local hx = Settings.Misc.HandsX / 20
-    local hy = Settings.Misc.HandsY / 20
-    local hz = Settings.Misc.HandsZ / 20
+    local hx = Settings.Misc.HandsX / 10
+    local hy = Settings.Misc.HandsY / 10
+    local hz = Settings.Misc.HandsZ / 10
 
     for motor, origC1 in pairs(originalC1s) do
         pcall(function()
             if motor and motor.Parent and motor.Part1 then
                 local name = motor.Part1.Name
                 local isLeft = name:find("Left") ~= nil
-                motor.C1 = origC1 * CFrame.new(isLeft and hx or -hx, hy, hz)
+                local offX = isLeft and hx or -hx
+                motor.C1 = origC1 * CFrame.new(offX, hy, hz)
             end
         end)
     end
 end)
 
--- WORLD (FIXED Sky Color - creates actual Sky object)
+-- WORLD
 local worldRainParts,worldSnowParts={},{}
 local originalPartColors={}
 local worldColorApplied=false
-local skyCreated=false
 
 local function applyWorldPartColors(col)
     for _,part in ipairs(workspace:GetDescendants()) do
@@ -772,7 +852,7 @@ local function applyWorldPartColors(col)
     end
     worldColorApplied=true
 end
-local function resetWorldPartColors()
+resetWorldPartColors = function()
     for part,col in pairs(originalPartColors) do pcall(function() if part and part.Parent then part.Color=col end end) end
     originalPartColors={}; worldColorApplied=false
 end
@@ -783,43 +863,32 @@ RunService.Heartbeat:Connect(function(dt)
         pcall(function() Lighting.Ambient=Settings.World.AmbientColor; Lighting.OutdoorAmbient=Settings.World.AmbientColor end)
     end
 
-    -- Sky Color (FIXED - creates Sky object + Atmosphere + ColorShift)
+    -- Sky Color (FIXED v2 - Strong tint via Atmosphere + Fog + Skybox override)
     if Settings.World.SkyEnabled then
         pcall(function()
             local col = Settings.World.SkyColor
 
-            -- Remove existing game skies temporarily and add our own
-            local fleexiSky = Lighting:FindFirstChild("FleexiSky")
-            if not fleexiSky then
-                -- Hide existing skies
-                for _, child in ipairs(Lighting:GetChildren()) do
-                    if child:IsA("Sky") and child.Name ~= "FleexiSky" then
-                        child.Parent = nil -- temporarily remove
-                    end
+            -- Blank out existing skybox textures
+            for _, child in ipairs(Lighting:GetChildren()) do
+                if child:IsA("Sky") and child.Name ~= "FleexiSky" then
+                    child.CelestialBodiesShown = false
+                    child.StarCount = 0
+                    child.SkyboxBk = "rbxasset://textures/blackBkgd_Texture.png"
+                    child.SkyboxDn = "rbxasset://textures/blackBkgd_Texture.png"
+                    child.SkyboxFt = "rbxasset://textures/blackBkgd_Texture.png"
+                    child.SkyboxLf = "rbxasset://textures/blackBkgd_Texture.png"
+                    child.SkyboxRt = "rbxasset://textures/blackBkgd_Texture.png"
+                    child.SkyboxUp = "rbxasset://textures/blackBkgd_Texture.png"
                 end
-
-                fleexiSky = Instance.new("Sky")
-                fleexiSky.Name = "FleexiSky"
-                fleexiSky.SkyboxBk = ""
-                fleexiSky.SkyboxDn = ""
-                fleexiSky.SkyboxFt = ""
-                fleexiSky.SkyboxLf = ""
-                fleexiSky.SkyboxRt = ""
-                fleexiSky.SkyboxUp = ""
-                fleexiSky.StarCount = 0
-                fleexiSky.CelestialBodiesShown = false
-                fleexiSky.Parent = Lighting
-                skyCreated = true
             end
 
-            -- Apply color through multiple channels
+            Lighting.ClockTime = 14
             Lighting.ColorShift_Top = col
             Lighting.ColorShift_Bottom = col
             Lighting.FogColor = col
-            Lighting.FogEnd = 100000
+            Lighting.FogEnd = 500
             Lighting.FogStart = 0
 
-            -- Create/update atmosphere for sky tinting
             local atmo = Lighting:FindFirstChild("FleexiAtmo")
             if not atmo then
                 atmo = Instance.new("Atmosphere")
@@ -830,7 +899,7 @@ RunService.Heartbeat:Connect(function(dt)
             atmo.Decay = col
             atmo.Glare = 0
             atmo.Haze = 10
-            atmo.Density = 0.3
+            atmo.Density = 0.5
         end)
     end
 
