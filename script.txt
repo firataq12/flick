@@ -1,4 +1,4 @@
--- // FLEEXI v1.2 - Ultimate Edition (Fixed)
+-- // FLEEXI v1.3 - Ultimate Edition (All Fixes)
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
@@ -78,6 +78,9 @@ local Settings = {
         AimHoldBtnSize = 60,
         ToggleBtnSize = 50,
         ToggleBtnLock = false,
+        AimModeBtn = false,
+        AimModeBtnLock = false,
+        AimModeBtnSize = 60,
     },
     Settings = {
         Theme = "Original", ParticleType = "Default",
@@ -121,6 +124,7 @@ local L = {
         world_ambient="Dünya Rengi",world_sky="Gökyüzü Rengi",world_rain="Yagmur",world_snow="Kar",world_ambient_on="Dünya Rengi Ac",world_sky_on="Gökyüzü Ac",world_reset="Sifirla",world_parts="Obje Rengi",
         sc_aim_btn="Aimbot Butonu",sc_esp_btn="ESP Butonu",sc_bhop_btn="Bhop Butonu",sc_aim_lock="Aim Sabitle",sc_esp_lock="ESP Sabitle",sc_bhop_lock="Bhop Sabitle",sc_lock_all="Hepsini Sabitle",sc_unlock_all="Hepsini Cöz",
         sc_btn_size="Buton Boyutu",sc_aimhold_lock="AimHold Sabitle",sc_aimhold_size="AimHold Boyut",sc_toggle_size="Toggle Boyut",sc_toggle_lock="Toggle Sabitle",
+        sc_aimmode_btn="Aim Mod Butonu",sc_aimmode_lock="Mod Sabitle",sc_aimmode_size="Mod Boyut",
         exec_run="Calistir",exec_clear="Temizle",exec_title="Lua Executor",
     },
     en = {
@@ -150,6 +154,7 @@ local L = {
         world_ambient="World Color",world_sky="Sky Color",world_rain="Rain",world_snow="Snow",world_ambient_on="World Color On",world_sky_on="Sky Color On",world_reset="Reset",world_parts="Part Color",
         sc_aim_btn="Aim Button",sc_esp_btn="ESP Button",sc_bhop_btn="Bhop Button",sc_aim_lock="Lock Aim",sc_esp_lock="Lock ESP",sc_bhop_lock="Lock Bhop",sc_lock_all="Lock All",sc_unlock_all="Unlock All",
         sc_btn_size="Button Size",sc_aimhold_lock="Lock AimHold",sc_aimhold_size="AimHold Size",sc_toggle_size="Toggle Size",sc_toggle_lock="Lock Toggle",
+        sc_aimmode_btn="Aim Mode Btn",sc_aimmode_lock="Lock Mode",sc_aimmode_size="Mode Size",
         exec_run="Run",exec_clear="Clear",exec_title="Lua Executor",
     },
     ru = {
@@ -179,6 +184,7 @@ local L = {
         world_ambient="Цвет мира",world_sky="Цвет неба",world_rain="Дождь",world_snow="Снег",world_ambient_on="Цвет мира вкл",world_sky_on="Цвет неба вкл",world_reset="Сброс",world_parts="Цвет объектов",
         sc_aim_btn="Кнопка Аим",sc_esp_btn="Кнопка ESP",sc_bhop_btn="Кнопка Bhop",sc_aim_lock="Закрепить Аим",sc_esp_lock="Закрепить ESP",sc_bhop_lock="Закрепить Bhop",sc_lock_all="Закрепить все",sc_unlock_all="Открепить все",
         sc_btn_size="Размер кнопок",sc_aimhold_lock="Закрепить AimHold",sc_aimhold_size="Размер AimHold",sc_toggle_size="Размер Toggle",sc_toggle_lock="Закрепить Toggle",
+        sc_aimmode_btn="Кнопка режима",sc_aimmode_lock="Закрепить режим",sc_aimmode_size="Размер режима",
         exec_run="Запустить",exec_clear="Очистить",exec_title="Lua Executor",
     },
 }
@@ -188,7 +194,7 @@ local function registerText(obj,key,prefix) translatables[obj]={key=key,prefix=p
 local function retranslateAll() for obj,d in pairs(translatables) do if obj and obj.Parent then obj.Text=d.prefix..T(d.key) end end end
 
 local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name="FleexiV12U"
+ScreenGui.Name="FleexiV13U"
 ScreenGui.ResetOnSpawn=false
 ScreenGui.ZIndexBehavior=Enum.ZIndexBehavior.Sibling
 ScreenGui.IgnoreGuiInset=true
@@ -206,7 +212,7 @@ WatermarkFrame.ZIndex=250
 Instance.new("UICorner",WatermarkFrame).CornerRadius=UDim.new(0,10)
 local wmStroke=Instance.new("UIStroke",WatermarkFrame); wmStroke.Color=Color3.fromRGB(130,0,255); wmStroke.Thickness=1.5
 local wmAccent=Instance.new("Frame",WatermarkFrame); wmAccent.Size=UDim2.new(1,0,0,2); wmAccent.BackgroundColor3=Color3.fromRGB(130,0,255); wmAccent.BorderSizePixel=0; wmAccent.ZIndex=251; Instance.new("UICorner",wmAccent).CornerRadius=UDim.new(0,10)
-local wmTitle=Instance.new("TextLabel",WatermarkFrame); wmTitle.Size=UDim2.new(0,80,1,0); wmTitle.Position=UDim2.new(0,10,0,0); wmTitle.BackgroundTransparency=1; wmTitle.Text="FLEEXI v1.2"; wmTitle.TextColor3=Color3.fromRGB(220,140,255); wmTitle.Font=Enum.Font.GothamBold; wmTitle.TextSize=13; wmTitle.TextXAlignment=Enum.TextXAlignment.Left; wmTitle.ZIndex=252
+local wmTitle=Instance.new("TextLabel",WatermarkFrame); wmTitle.Size=UDim2.new(0,80,1,0); wmTitle.Position=UDim2.new(0,10,0,0); wmTitle.BackgroundTransparency=1; wmTitle.Text="FLEEXI v1.3"; wmTitle.TextColor3=Color3.fromRGB(220,140,255); wmTitle.Font=Enum.Font.GothamBold; wmTitle.TextSize=13; wmTitle.TextXAlignment=Enum.TextXAlignment.Left; wmTitle.ZIndex=252
 local wmLink=Instance.new("TextLabel",WatermarkFrame); wmLink.Size=UDim2.new(0,190,1,0); wmLink.Position=UDim2.new(0,100,0,0); wmLink.BackgroundTransparency=1; wmLink.Text="t.me/Fleeximods"; wmLink.TextColor3=Color3.fromRGB(160,100,220); wmLink.Font=Enum.Font.GothamMedium; wmLink.TextSize=12; wmLink.TextXAlignment=Enum.TextXAlignment.Right; wmLink.ZIndex=252
 
 -- LOADING
@@ -214,7 +220,7 @@ local LoadFrame=Instance.new("Frame",ScreenGui); LoadFrame.Size=UDim2.new(1,0,1,
 local LoadLogo=Instance.new("TextLabel",LoadFrame); LoadLogo.Size=UDim2.new(0,90,0,90); LoadLogo.Position=UDim2.new(0.5,-45,0.5,-100); LoadLogo.BackgroundColor3=Color3.fromRGB(90,0,200); LoadLogo.Text="F"; LoadLogo.TextSize=46; LoadLogo.Font=Enum.Font.GothamBold; LoadLogo.TextColor3=Color3.fromRGB(255,255,255); LoadLogo.ZIndex=1000; Instance.new("UICorner",LoadLogo).CornerRadius=UDim.new(1,0)
 local logoStroke=Instance.new("UIStroke",LoadLogo); logoStroke.Color=Color3.fromRGB(180,80,255); logoStroke.Thickness=3
 local LoadTitle=Instance.new("TextLabel",LoadFrame); LoadTitle.Size=UDim2.new(1,0,0,50); LoadTitle.Position=UDim2.new(0,0,0.5,5); LoadTitle.BackgroundTransparency=1; LoadTitle.Text="FLEEXI"; LoadTitle.TextColor3=Color3.fromRGB(220,140,255); LoadTitle.Font=Enum.Font.GothamBold; LoadTitle.TextSize=42; LoadTitle.ZIndex=1000
-local LoadSub=Instance.new("TextLabel",LoadFrame); LoadSub.Size=UDim2.new(1,0,0,20); LoadSub.Position=UDim2.new(0,0,0.5,55); LoadSub.BackgroundTransparency=1; LoadSub.Text="v1.2"; LoadSub.TextColor3=Color3.fromRGB(150,80,200); LoadSub.Font=Enum.Font.GothamMedium; LoadSub.TextSize=14; LoadSub.ZIndex=1000
+local LoadSub=Instance.new("TextLabel",LoadFrame); LoadSub.Size=UDim2.new(1,0,0,20); LoadSub.Position=UDim2.new(0,0,0.5,55); LoadSub.BackgroundTransparency=1; LoadSub.Text="v1.3"; LoadSub.TextColor3=Color3.fromRGB(150,80,200); LoadSub.Font=Enum.Font.GothamMedium; LoadSub.TextSize=14; LoadSub.ZIndex=1000
 local LoadBarBG=Instance.new("Frame",LoadFrame); LoadBarBG.Size=UDim2.new(0,240,0,6); LoadBarBG.Position=UDim2.new(0.5,-120,0.5,90); LoadBarBG.BackgroundColor3=Color3.fromRGB(25,12,45); LoadBarBG.BorderSizePixel=0; LoadBarBG.ZIndex=1000; Instance.new("UICorner",LoadBarBG).CornerRadius=UDim.new(1,0)
 local LoadBar=Instance.new("Frame",LoadBarBG); LoadBar.Size=UDim2.new(0,0,1,0); LoadBar.BackgroundColor3=Color3.fromRGB(140,0,255); LoadBar.BorderSizePixel=0; LoadBar.ZIndex=1001; Instance.new("UICorner",LoadBar).CornerRadius=UDim.new(1,0)
 task.spawn(function()
@@ -273,6 +279,50 @@ UserInputService.InputBegan:Connect(function(inp,gpe) if gpe then return end; if
 UserInputService.InputEnded:Connect(function(inp) if inp.KeyCode==Enum.KeyCode.E and Settings.Aimbot.Mode=="Hold" then holdActive=false end end)
 local function updateAimBtnVis() AimHoldBtn.Visible=Settings.Aimbot.Enabled and (Settings.Aimbot.Mode=="Hold" or Settings.Aimbot.Mode=="Toggle") end
 
+-- AIM MODE BUTTON (NEW)
+local aimModeNames = {Always="ALL", Toggle="TGL", Hold="HLD"}
+local aimModeOrder = {"Always","Toggle","Hold"}
+local AimModeBtn=Instance.new("TextButton",ScreenGui)
+AimModeBtn.Size=UDim2.new(0,60,0,60)
+AimModeBtn.Position=UDim2.new(1,-75,0.5,40)
+AimModeBtn.BackgroundColor3=Color3.fromRGB(15,5,30)
+AimModeBtn.Text="ALL"
+AimModeBtn.TextSize=11
+AimModeBtn.Font=Enum.Font.GothamBold
+AimModeBtn.TextColor3=Color3.fromRGB(180,100,255)
+AimModeBtn.ZIndex=200
+AimModeBtn.AutoButtonColor=false
+AimModeBtn.Visible=false
+Instance.new("UICorner",AimModeBtn).CornerRadius=UDim.new(1,0)
+Instance.new("UIStroke",AimModeBtn).Color=Color3.fromRGB(80,0,180)
+local aimModeBtnLocked=false
+local amDrag,amDS,amSP
+AimModeBtn.InputBegan:Connect(function(inp)
+    if aimModeBtnLocked then return end
+    if inp.UserInputType==Enum.UserInputType.Touch or inp.UserInputType==Enum.UserInputType.MouseButton1 then
+        amDrag=true; amDS=inp.Position; amSP=AimModeBtn.Position
+        inp.Changed:Connect(function() if inp.UserInputState==Enum.UserInputState.End then amDrag=false end end)
+    end
+end)
+UserInputService.InputChanged:Connect(function(inp)
+    if amDrag and not aimModeBtnLocked and (inp.UserInputType==Enum.UserInputType.Touch or inp.UserInputType==Enum.UserInputType.MouseMovement) then
+        local d=inp.Position-amDS; AimModeBtn.Position=UDim2.new(amSP.X.Scale,amSP.X.Offset+d.X,amSP.Y.Scale,amSP.Y.Offset+d.Y)
+    end
+end)
+AimModeBtn.MouseButton1Click:Connect(function()
+    local idx=1
+    for i,v in ipairs(aimModeOrder) do if v==Settings.Aimbot.Mode then idx=i; break end end
+    idx=idx+1; if idx>#aimModeOrder then idx=1 end
+    Settings.Aimbot.Mode=aimModeOrder[idx]
+    Settings.Aimbot.Toggled=false; holdActive=false
+    AimModeBtn.Text=aimModeNames[Settings.Aimbot.Mode]
+    updateAimBtnVis()
+end)
+local function updateAimModeBtnVis()
+    AimModeBtn.Visible=Settings.Shortcuts.AimModeBtn
+    AimModeBtn.Text=aimModeNames[Settings.Aimbot.Mode] or "ALL"
+end
+
 -- SHORTCUT BUTTONS
 local function makeShortcutBtn(text,pos)
     local btn=Instance.new("TextButton",ScreenGui); btn.Size=UDim2.new(0,Settings.Shortcuts.BtnSize,0,Settings.Shortcuts.BtnSize); btn.Position=pos; btn.BackgroundColor3=Color3.fromRGB(15,5,30); btn.Text=text; btn.TextSize=9; btn.Font=Enum.Font.GothamBold; btn.TextColor3=Color3.fromRGB(140,60,220); btn.ZIndex=199; btn.AutoButtonColor=false; btn.Visible=false; Instance.new("UICorner",btn).CornerRadius=UDim.new(1,0); Instance.new("UIStroke",btn).Color=Color3.fromRGB(80,0,180)
@@ -292,10 +342,12 @@ local function updateAllBtnSizes()
     scBhopBtn.Size=UDim2.new(0,sz,0,sz)
     local ahsz=Settings.Shortcuts.AimHoldBtnSize
     AimHoldBtn.Size=UDim2.new(0,ahsz,0,ahsz)
+    local amsz=Settings.Shortcuts.AimModeBtnSize
+    AimModeBtn.Size=UDim2.new(0,amsz,0,amsz)
 end
 
 local scAimState,scEspState,scBhopState=false,true,false
-scAimBtn.MouseButton1Click:Connect(function() scAimState=not scAimState; Settings.Aimbot.Enabled=scAimState; scAimBtn.BackgroundColor3=scAimState and Color3.fromRGB(90,0,200) or Color3.fromRGB(15,5,30); updateAimBtnVis() end)
+scAimBtn.MouseButton1Click:Connect(function() scAimState=not scAimState; Settings.Aimbot.Enabled=scAimState; scAimBtn.BackgroundColor3=scAimState and Color3.fromRGB(90,0,200) or Color3.fromRGB(15,5,30); updateAimBtnVis(); updateAimModeBtnVis() end)
 scEspBtn.MouseButton1Click:Connect(function() scEspState=not scEspState; Settings.ESP.Enabled=scEspState; scEspBtn.BackgroundColor3=scEspState and Color3.fromRGB(90,0,200) or Color3.fromRGB(15,5,30) end)
 scBhopBtn.MouseButton1Click:Connect(function() scBhopState=not scBhopState; Settings.Misc.Bhop=scBhopState; scBhopBtn.BackgroundColor3=scBhopState and Color3.fromRGB(90,0,200) or Color3.fromRGB(15,5,30) end)
 
@@ -353,7 +405,7 @@ local TopBar=Instance.new("Frame",Main); TopBar.Size=UDim2.new(1,0,0,46); TopBar
 local logoBg=Instance.new("Frame",TopBar); logoBg.Size=UDim2.new(0,32,0,32); logoBg.Position=UDim2.new(0,12,0.5,-16); logoBg.BackgroundColor3=Color3.fromRGB(90,0,200); logoBg.ZIndex=102; Instance.new("UICorner",logoBg).CornerRadius=UDim.new(0,8)
 local logoTxt=Instance.new("TextLabel",logoBg); logoTxt.Size=UDim2.new(1,0,1,0); logoTxt.BackgroundTransparency=1; logoTxt.Text="F"; logoTxt.TextSize=16; logoTxt.Font=Enum.Font.GothamBold; logoTxt.TextColor3=Color3.fromRGB(255,255,255); logoTxt.ZIndex=103
 local TitleLbl=Instance.new("TextLabel",TopBar); TitleLbl.Size=UDim2.new(0,120,1,0); TitleLbl.Position=UDim2.new(0,52,0,0); TitleLbl.BackgroundTransparency=1; TitleLbl.Text="FLEEXI"; TitleLbl.TextColor3=Color3.fromRGB(220,140,255); TitleLbl.Font=Enum.Font.GothamBold; TitleLbl.TextSize=20; TitleLbl.TextXAlignment=Enum.TextXAlignment.Left; TitleLbl.ZIndex=102
-local VerLbl=Instance.new("TextLabel",TopBar); VerLbl.Size=UDim2.new(0,34,0,14); VerLbl.Position=UDim2.new(0,155,0.5,-7); VerLbl.BackgroundColor3=Color3.fromRGB(60,0,130); VerLbl.BorderSizePixel=0; VerLbl.Text="v1.2"; VerLbl.TextColor3=Color3.fromRGB(220,180,255); VerLbl.Font=Enum.Font.GothamBold; VerLbl.TextSize=9; VerLbl.ZIndex=102; Instance.new("UICorner",VerLbl).CornerRadius=UDim.new(0,4)
+local VerLbl=Instance.new("TextLabel",TopBar); VerLbl.Size=UDim2.new(0,34,0,14); VerLbl.Position=UDim2.new(0,155,0.5,-7); VerLbl.BackgroundColor3=Color3.fromRGB(60,0,130); VerLbl.BorderSizePixel=0; VerLbl.Text="v1.3"; VerLbl.TextColor3=Color3.fromRGB(220,180,255); VerLbl.Font=Enum.Font.GothamBold; VerLbl.TextSize=9; VerLbl.ZIndex=102; Instance.new("UICorner",VerLbl).CornerRadius=UDim.new(0,4)
 local CloseBtnMain=Instance.new("TextButton",TopBar); CloseBtnMain.Size=UDim2.new(0,30,0,30); CloseBtnMain.Position=UDim2.new(1,-40,0.5,-15); CloseBtnMain.BackgroundColor3=Color3.fromRGB(25,8,45); CloseBtnMain.Text="X"; CloseBtnMain.TextColor3=Color3.fromRGB(180,80,255); CloseBtnMain.Font=Enum.Font.GothamBold; CloseBtnMain.TextSize=13; CloseBtnMain.ZIndex=102; CloseBtnMain.AutoButtonColor=false; Instance.new("UICorner",CloseBtnMain).CornerRadius=UDim.new(0,8)
 local divTop=Instance.new("Frame",Main); divTop.Size=UDim2.new(1,0,0,1); divTop.Position=UDim2.new(0,0,0,50); divTop.BackgroundColor3=Color3.fromRGB(45,15,90); divTop.BorderSizePixel=0; divTop.ZIndex=101
 local Sidebar=Instance.new("Frame",Main); Sidebar.Size=UDim2.new(0,130,1,-52); Sidebar.Position=UDim2.new(0,0,0,51); Sidebar.BackgroundColor3=Color3.fromRGB(11,6,20); Sidebar.BackgroundTransparency=0.15; Sidebar.BorderSizePixel=0; Sidebar.ZIndex=101
@@ -411,12 +463,12 @@ local function MakeColorBtn(parent,labelKey,initial,callback,order) local frame=
 
 -- ===== ALL PANELS =====
 -- AIM
-MakeToggle(AimPanel,"aimbot_on",false,function(v) Settings.Aimbot.Enabled=v; updateAimBtnVis() end,1)
+MakeToggle(AimPanel,"aimbot_on",false,function(v) Settings.Aimbot.Enabled=v; updateAimBtnVis(); updateAimModeBtnVis() end,1)
 MakeToggle(AimPanel,"wall_check",false,function(v) Settings.Aimbot.WallCheck=v end,2)
 MakeToggle(AimPanel,"fov_circle",true,function(v) Settings.Aimbot.ShowFOV=v end,3)
 MakeToggle(AimPanel,"fov_fill",false,function(v) Settings.Aimbot.FovFill=v end,4)
 MakeToggle(AimPanel,"aim_360",false,function(v) Settings.Aimbot.Mode360=v end,5)
-MakeDropdown(AimPanel,"aim_mode",{{key="mode_always",value="Always"},{key="mode_toggle",value="Toggle"},{key="mode_hold",value="Hold"}},1,function(v) Settings.Aimbot.Mode=v; Settings.Aimbot.Toggled=false; holdActive=false; updateAimBtnVis() end,6)
+MakeDropdown(AimPanel,"aim_mode",{{key="mode_always",value="Always"},{key="mode_toggle",value="Toggle"},{key="mode_hold",value="Hold"}},1,function(v) Settings.Aimbot.Mode=v; Settings.Aimbot.Toggled=false; holdActive=false; updateAimBtnVis(); updateAimModeBtnVis() end,6)
 MakeDropdown(AimPanel,"target_bone",{{key="bone_head",value="Head"},{key="bone_torso",value="UpperTorso"},{key="bone_random",value="Random"}},1,function(v) Settings.Aimbot.TargetBone=v end,7)
 MakeSlider(AimPanel,"smooth",1,100,25,"%",function(v) Settings.Aimbot.Smooth=1-((v-1)/99)*0.99 end,8)
 MakeSlider(AimPanel,"fov_size",30,400,120,"px",function(v) Settings.Aimbot.FOV=v end,9)
@@ -442,7 +494,7 @@ MakeColorBtn(EspPanel,"box_color",Settings.ESP.BoxColor,function(c) Settings.ESP
 -- AA
 MakeToggle(AAPanel,"aa_on",false,function(v) Settings.AntiAim.Enabled=v end,1); MakeDropdown(AAPanel,"aa_mode",{{key="mode_spin",value="Spin"},{key="mode_back",value="Backward"},{key="mode_random",value="Random"},{key="mode_jitter",value="Jitter"}},1,function(v) Settings.AntiAim.Mode=v end,2); MakeSlider(AAPanel,"aa_yaw",1,100,20,"",function(v) Settings.AntiAim.YawSpeed=v end,3); MakeSlider(AAPanel,"aa_pitch",-89,89,0,"",function(v) Settings.AntiAim.Pitch=v end,4)
 
--- MISC (FIXED: FOV and 3rd person no longer break other features)
+-- MISC
 MakeToggle(MiscPanel,"misc_fov_on",false,function(v) Settings.Misc.FOVEnabled=v end,1)
 MakeSlider(MiscPanel,"misc_fov",30,120,70,"",function(v) Settings.Misc.FOV=v end,2)
 MakeToggle(MiscPanel,"force_tp",false,function(v) Settings.Misc.ForceThirdPerson=v end,3)
@@ -461,14 +513,11 @@ MakeToggle(WorldPanel,"world_sky_on",false,function(v)
         pcall(function()
             Lighting.FogColor=defaultFogColor; Lighting.FogEnd=defaultFogEnd; Lighting.FogStart=defaultFogStart
             Lighting.ColorShift_Top=defaultCSTop; Lighting.ColorShift_Bottom=defaultCSBot
-            -- Remove any flexi sky
             for _,child in ipairs(Lighting:GetChildren()) do
                 if child:IsA("Sky") and child.Name=="FleexiSky" then child:Destroy() end
             end
-            -- Remove atmosphere tint
-            local atmo=Lighting:FindFirstChildOfClass("Atmosphere")
-            if atmo and atmo:GetAttribute("FleexiTinted") then
-                atmo:Destroy()
+            for _,child in ipairs(Lighting:GetChildren()) do
+                if child:IsA("Atmosphere") and child.Name=="FleexiAtmo" then child:Destroy() end
             end
         end)
     end
@@ -485,27 +534,28 @@ MakeButton(WorldPanel,"world_reset",function()
         Lighting.FogColor=defaultFogColor; Lighting.FogEnd=defaultFogEnd; Lighting.FogStart=defaultFogStart
         Lighting.ColorShift_Top=defaultCSTop; Lighting.ColorShift_Bottom=defaultCSBot
         for _,child in ipairs(Lighting:GetChildren()) do
-            if child:IsA("Sky") and child.Name=="FleexiSky" then child:Destroy() end
+            if (child:IsA("Sky") and child.Name=="FleexiSky") or (child:IsA("Atmosphere") and child.Name=="FleexiAtmo") then child:Destroy() end
         end
-        local atmo=Lighting:FindFirstChildOfClass("Atmosphere")
-        if atmo and atmo:GetAttribute("FleexiTinted") then atmo:Destroy() end
     end)
 end,8)
 
--- SHORTCUTS (with Toggle btn settings + AimHold settings)
+-- SHORTCUTS (with Aim Mode button + Toggle btn settings + AimHold settings)
 MakeToggle(ShortcutPanel,"sc_aim_btn",false,function(v) Settings.Shortcuts.AimBtn=v; scAimBtn.Visible=v end,1)
 MakeToggle(ShortcutPanel,"sc_esp_btn",false,function(v) Settings.Shortcuts.EspBtn=v; scEspBtn.Visible=v end,2)
 MakeToggle(ShortcutPanel,"sc_bhop_btn",false,function(v) Settings.Shortcuts.BhopBtn=v; scBhopBtn.Visible=v end,3)
-MakeToggle(ShortcutPanel,"sc_aim_lock",false,function(v) Settings.Shortcuts.AimLock=v; scAimLockFn(v) end,4)
-MakeToggle(ShortcutPanel,"sc_esp_lock",false,function(v) Settings.Shortcuts.EspLock=v; scEspLockFn(v) end,5)
-MakeToggle(ShortcutPanel,"sc_bhop_lock",false,function(v) Settings.Shortcuts.BhopLock=v; scBhopLockFn(v) end,6)
-MakeToggle(ShortcutPanel,"sc_aimhold_lock",false,function(v) Settings.Shortcuts.AimHoldBtnLock=v; aimHoldBtnLocked=v end,7)
-MakeToggle(ShortcutPanel,"sc_toggle_lock",false,function(v) Settings.Shortcuts.ToggleBtnLock=v end,8)
-MakeSlider(ShortcutPanel,"sc_btn_size",20,120,60,"px",function(v) Settings.Shortcuts.BtnSize=v; updateAllBtnSizes() end,9)
-MakeSlider(ShortcutPanel,"sc_aimhold_size",20,120,60,"px",function(v) Settings.Shortcuts.AimHoldBtnSize=v; AimHoldBtn.Size=UDim2.new(0,v,0,v) end,10)
-MakeSlider(ShortcutPanel,"sc_toggle_size",20,120,50,"px",function(v) Settings.Shortcuts.ToggleBtnSize=v; ToggleBtn.Size=UDim2.new(0,v,0,v) end,11)
-MakeButton(ShortcutPanel,"sc_lock_all",function() scAimLockFn(true); scEspLockFn(true); scBhopLockFn(true); aimHoldBtnLocked=true; Settings.Shortcuts.ToggleBtnLock=true end,12)
-MakeButton(ShortcutPanel,"sc_unlock_all",function() scAimLockFn(false); scEspLockFn(false); scBhopLockFn(false); aimHoldBtnLocked=false; Settings.Shortcuts.ToggleBtnLock=false end,13)
+MakeToggle(ShortcutPanel,"sc_aimmode_btn",false,function(v) Settings.Shortcuts.AimModeBtn=v; updateAimModeBtnVis() end,4)
+MakeToggle(ShortcutPanel,"sc_aim_lock",false,function(v) Settings.Shortcuts.AimLock=v; scAimLockFn(v) end,5)
+MakeToggle(ShortcutPanel,"sc_esp_lock",false,function(v) Settings.Shortcuts.EspLock=v; scEspLockFn(v) end,6)
+MakeToggle(ShortcutPanel,"sc_bhop_lock",false,function(v) Settings.Shortcuts.BhopLock=v; scBhopLockFn(v) end,7)
+MakeToggle(ShortcutPanel,"sc_aimhold_lock",false,function(v) Settings.Shortcuts.AimHoldBtnLock=v; aimHoldBtnLocked=v end,8)
+MakeToggle(ShortcutPanel,"sc_aimmode_lock",false,function(v) Settings.Shortcuts.AimModeBtnLock=v; aimModeBtnLocked=v end,9)
+MakeToggle(ShortcutPanel,"sc_toggle_lock",false,function(v) Settings.Shortcuts.ToggleBtnLock=v end,10)
+MakeSlider(ShortcutPanel,"sc_btn_size",20,120,60,"px",function(v) Settings.Shortcuts.BtnSize=v; updateAllBtnSizes() end,11)
+MakeSlider(ShortcutPanel,"sc_aimhold_size",20,120,60,"px",function(v) Settings.Shortcuts.AimHoldBtnSize=v; AimHoldBtn.Size=UDim2.new(0,v,0,v) end,12)
+MakeSlider(ShortcutPanel,"sc_aimmode_size",20,120,60,"px",function(v) Settings.Shortcuts.AimModeBtnSize=v; AimModeBtn.Size=UDim2.new(0,v,0,v) end,13)
+MakeSlider(ShortcutPanel,"sc_toggle_size",20,120,50,"px",function(v) Settings.Shortcuts.ToggleBtnSize=v; ToggleBtn.Size=UDim2.new(0,v,0,v) end,14)
+MakeButton(ShortcutPanel,"sc_lock_all",function() scAimLockFn(true); scEspLockFn(true); scBhopLockFn(true); aimHoldBtnLocked=true; aimModeBtnLocked=true; Settings.Shortcuts.ToggleBtnLock=true end,15)
+MakeButton(ShortcutPanel,"sc_unlock_all",function() scAimLockFn(false); scEspLockFn(false); scBhopLockFn(false); aimHoldBtnLocked=false; aimModeBtnLocked=false; Settings.Shortcuts.ToggleBtnLock=false end,16)
 
 -- SETTINGS
 local langRow=Instance.new("Frame",SetPanel); langRow.BackgroundColor3=Settings.Settings.GuiBtnColor; langRow.BackgroundTransparency=0.1; langRow.BorderSizePixel=0; langRow.LayoutOrder=1; langRow.ZIndex=101; Instance.new("UICorner",langRow).CornerRadius=UDim.new(0,9); Instance.new("UIStroke",langRow).Color=Settings.Settings.GuiBorderColor; local lrLbl=Instance.new("TextLabel",langRow); lrLbl.Size=UDim2.new(0,60,1,0); lrLbl.Position=UDim2.new(0,10,0,0); lrLbl.BackgroundTransparency=1; lrLbl.TextColor3=Settings.Settings.GuiTextColor; lrLbl.Font=Enum.Font.GothamMedium; lrLbl.TextSize=10; lrLbl.TextXAlignment=Enum.TextXAlignment.Left; lrLbl.ZIndex=102; registerText(lrLbl,"language"); local langCycleBtn=Instance.new("TextButton",langRow); langCycleBtn.Size=UDim2.new(0,100,0,24); langCycleBtn.Position=UDim2.new(1,-105,0.5,-12); langCycleBtn.BackgroundColor3=Color3.fromRGB(65,0,140); langCycleBtn.AutoButtonColor=false; langCycleBtn.ZIndex=103; Instance.new("UICorner",langCycleBtn).CornerRadius=UDim.new(0,6); langCycleBtn.Font=Enum.Font.GothamBold; langCycleBtn.TextSize=11; langCycleBtn.TextColor3=Color3.fromRGB(240,210,255); local langOrder={"ru","tr","en"}; local langFlags={ru="RU",tr="TR",en="EN"}; local function refreshLangBtn() langCycleBtn.Text=langFlags[Settings.Language] end; refreshLangBtn(); langCycleBtn.MouseButton1Click:Connect(function() local idx=1; for i,v in ipairs(langOrder) do if v==Settings.Language then idx=i end end; idx=idx+1; if idx>#langOrder then idx=1 end; Settings.Language=langOrder[idx]; retranslateAll(); refreshLangBtn() end)
@@ -558,7 +608,7 @@ local function getTargetPart(char) local bone=Settings.Aimbot.TargetBone; if bon
 local aaYaw,aaTick=0,0
 RunService.Heartbeat:Connect(function(dt) if not Settings.AntiAim.Enabled then return end; local char=LocalPlayer.Character; if not char then return end; local root=char:FindFirstChild("HumanoidRootPart"); local hum=char:FindFirstChildOfClass("Humanoid"); if not(root and hum and hum.Health>0) then return end; local mode=Settings.AntiAim.Mode; local speed=Settings.AntiAim.YawSpeed; local pitch=math.rad(Settings.AntiAim.Pitch); if mode=="Spin" then aaYaw=aaYaw+math.rad(speed*dt*30) elseif mode=="Backward" then aaYaw=math.pi elseif mode=="Random" then aaTick=aaTick+dt; if aaTick>=0.3 then aaTick=0; aaYaw=math.random()*math.pi*2 end elseif mode=="Jitter" then aaYaw=math.sin(tick()*speed)*math.pi end; pcall(function() root.CFrame=CFrame.new(root.Position)*CFrame.Angles(pitch,aaYaw,0) end) end)
 
--- Bhop (FIXED)
+-- Bhop
 RunService.Heartbeat:Connect(function()
     if not Settings.Misc.Bhop then return end
     local char=LocalPlayer.Character; if not char then return end
@@ -568,30 +618,45 @@ RunService.Heartbeat:Connect(function()
     end
 end)
 
--- Anti-AFK (FIXED - no jumping, uses VirtualUser properly)
-local antiAfkConn
-local function setupAntiAFK()
-    if antiAfkConn then antiAfkConn:Disconnect(); antiAfkConn=nil end
-    antiAfkConn = LocalPlayer.Idled:Connect(function()
+-- Anti-AFK (FIXED - Timer based, works reliably)
+local antiAfkTimer = 0
+RunService.Heartbeat:Connect(function(dt)
+    if not Settings.Misc.AntiAFK then
+        antiAfkTimer = 0
+        return
+    end
+    antiAfkTimer = antiAfkTimer + dt
+    if antiAfkTimer >= 60 then
+        antiAfkTimer = 0
+        pcall(function()
+            VirtualUser:CaptureController()
+            VirtualUser:ClickButton2(Vector2.new(0, 0))
+        end)
+        -- Also try keypress method
+        pcall(function()
+            VirtualUser:SetKeyDown(0x77) -- W key
+            task.wait(0.1)
+            VirtualUser:SetKeyUp(0x77)
+        end)
+    end
+end)
+-- Also catch Idled event as backup
+pcall(function()
+    LocalPlayer.Idled:Connect(function()
         if Settings.Misc.AntiAFK then
             pcall(function()
                 VirtualUser:CaptureController()
-                VirtualUser:ClickButton2(Vector2.new())
+                VirtualUser:ClickButton2(Vector2.new(0, 0))
             end)
         end
     end)
-end
-setupAntiAFK()
+end)
 
--- FOV & Third Person (FIXED - separate heartbeat, no blocking)
+-- FOV & Third Person
 RunService.Heartbeat:Connect(function()
-    -- FOV
     if Settings.Misc.FOVEnabled then
-        pcall(function()
-            Camera.FieldOfView = Settings.Misc.FOV
-        end)
+        pcall(function() Camera.FieldOfView = Settings.Misc.FOV end)
     end
-    -- Third Person
     if Settings.Misc.ForceThirdPerson then
         pcall(function()
             LocalPlayer.CameraMode = Enum.CameraMode.Classic
@@ -600,8 +665,6 @@ RunService.Heartbeat:Connect(function()
         end)
     end
 end)
-
--- Restore FOV/Camera when disabled
 local prevFovEnabled = false
 local prevTPEnabled = false
 RunService.Heartbeat:Connect(function()
@@ -619,23 +682,82 @@ RunService.Heartbeat:Connect(function()
     prevTPEnabled = Settings.Misc.ForceThirdPerson
 end)
 
--- HANDS
-local originalC1s={}; local handsSaved=false
-function handsResetAll() for m,c1 in pairs(originalC1s) do pcall(function() if m and m.Parent then m.C1=c1 end end) end; originalC1s={}; handsSaved=false end
+-- HANDS (FIXED - proper Motor6D scanning for R6/R15)
+local originalC1s={}
+local handsSaved=false
+
+function handsResetAll()
+    for m,c1 in pairs(originalC1s) do
+        pcall(function() if m and m.Parent then m.C1=c1 end end)
+    end
+    originalC1s={}
+    handsSaved=false
+end
+
 LocalPlayer.CharacterAdded:Connect(function() handsSaved=false; originalC1s={} end)
-local armPartNames={RightUpperArm=true,RightLowerArm=true,RightHand=true,LeftUpperArm=true,LeftLowerArm=true,LeftHand=true,["Right Arm"]=true,["Left Arm"]=true,RightArm=true,LeftArm=true}
+
+local armPartNamesR15 = {
+    RightUpperArm=true, RightLowerArm=true, RightHand=true,
+    LeftUpperArm=true, LeftLowerArm=true, LeftHand=true,
+}
+local armPartNamesR6 = {
+    ["Right Arm"]=true, ["Left Arm"]=true,
+}
+
+local function findArmMotors(char)
+    local motors = {}
+    -- Search all descendants for Motor6D joints
+    for _, desc in ipairs(char:GetDescendants()) do
+        if desc:IsA("Motor6D") then
+            local p1Name = desc.Part1 and desc.Part1.Name or ""
+            if armPartNamesR15[p1Name] or armPartNamesR6[p1Name] then
+                if not originalC1s[desc] then
+                    originalC1s[desc] = desc.C1
+                end
+                table.insert(motors, desc)
+            end
+        end
+    end
+    return motors
+end
+
 RunService.RenderStepped:Connect(function()
-    if not Settings.Misc.HandsEnabled then return end; local char=LocalPlayer.Character; if not char then return end
-    if not handsSaved then for _,j in ipairs(char:GetDescendants()) do if j:IsA("Motor6D") and j.Part1 and armPartNames[j.Part1.Name] then if not originalC1s[j] then originalC1s[j]=j.C1 end end end; handsSaved=true end
-    if next(originalC1s)==nil then return end
-    local hx=Settings.Misc.HandsX/20; local hy=Settings.Misc.HandsY/20; local hz=Settings.Misc.HandsZ/20
-    for m,origC1 in pairs(originalC1s) do pcall(function() if m and m.Parent and m.Part1 then local isLeft=(m.Part1.Name:find("Left")~=nil); m.C1=origC1*CFrame.new(isLeft and hx or -hx,hy,hz) end end) end
+    if not Settings.Misc.HandsEnabled then return end
+    local char = LocalPlayer.Character
+    if not char then return end
+
+    -- Save and find motors
+    if not handsSaved then
+        findArmMotors(char)
+        handsSaved = true
+    end
+
+    -- If no motors found yet, try again
+    if next(originalC1s) == nil then
+        findArmMotors(char)
+        if next(originalC1s) == nil then return end
+    end
+
+    local hx = Settings.Misc.HandsX / 20
+    local hy = Settings.Misc.HandsY / 20
+    local hz = Settings.Misc.HandsZ / 20
+
+    for motor, origC1 in pairs(originalC1s) do
+        pcall(function()
+            if motor and motor.Parent and motor.Part1 then
+                local name = motor.Part1.Name
+                local isLeft = name:find("Left") ~= nil
+                motor.C1 = origC1 * CFrame.new(isLeft and hx or -hx, hy, hz)
+            end
+        end)
+    end
 end)
 
--- WORLD (FIXED Sky Color)
+-- WORLD (FIXED Sky Color - creates actual Sky object)
 local worldRainParts,worldSnowParts={},{}
 local originalPartColors={}
 local worldColorApplied=false
+local skyCreated=false
 
 local function applyWorldPartColors(col)
     for _,part in ipairs(workspace:GetDescendants()) do
@@ -660,39 +782,71 @@ RunService.Heartbeat:Connect(function(dt)
     if Settings.World.AmbientEnabled then
         pcall(function() Lighting.Ambient=Settings.World.AmbientColor; Lighting.OutdoorAmbient=Settings.World.AmbientColor end)
     end
-    -- Sky Color (FIXED - uses ColorShift + FogColor + Atmosphere)
+
+    -- Sky Color (FIXED - creates Sky object + Atmosphere + ColorShift)
     if Settings.World.SkyEnabled then
         pcall(function()
-            local col=Settings.World.SkyColor
-            Lighting.ColorShift_Top=col
-            Lighting.ColorShift_Bottom=col
-            Lighting.FogColor=col
-            Lighting.FogEnd=9999
-            Lighting.FogStart=0
-            -- Create or update atmosphere
-            local atmo=Lighting:FindFirstChildOfClass("Atmosphere")
-            if not atmo then
-                atmo=Instance.new("Atmosphere")
-                atmo:SetAttribute("FleexiTinted",true)
-                atmo.Parent=Lighting
+            local col = Settings.World.SkyColor
+
+            -- Remove existing game skies temporarily and add our own
+            local fleexiSky = Lighting:FindFirstChild("FleexiSky")
+            if not fleexiSky then
+                -- Hide existing skies
+                for _, child in ipairs(Lighting:GetChildren()) do
+                    if child:IsA("Sky") and child.Name ~= "FleexiSky" then
+                        child.Parent = nil -- temporarily remove
+                    end
+                end
+
+                fleexiSky = Instance.new("Sky")
+                fleexiSky.Name = "FleexiSky"
+                fleexiSky.SkyboxBk = ""
+                fleexiSky.SkyboxDn = ""
+                fleexiSky.SkyboxFt = ""
+                fleexiSky.SkyboxLf = ""
+                fleexiSky.SkyboxRt = ""
+                fleexiSky.SkyboxUp = ""
+                fleexiSky.StarCount = 0
+                fleexiSky.CelestialBodiesShown = false
+                fleexiSky.Parent = Lighting
+                skyCreated = true
             end
-            atmo.Color=col
-            atmo.Decay=col
-            atmo.Glare=0
-            atmo.Haze=0
+
+            -- Apply color through multiple channels
+            Lighting.ColorShift_Top = col
+            Lighting.ColorShift_Bottom = col
+            Lighting.FogColor = col
+            Lighting.FogEnd = 100000
+            Lighting.FogStart = 0
+
+            -- Create/update atmosphere for sky tinting
+            local atmo = Lighting:FindFirstChild("FleexiAtmo")
+            if not atmo then
+                atmo = Instance.new("Atmosphere")
+                atmo.Name = "FleexiAtmo"
+                atmo.Parent = Lighting
+            end
+            atmo.Color = col
+            atmo.Decay = col
+            atmo.Glare = 0
+            atmo.Haze = 10
+            atmo.Density = 0.3
         end)
     end
+
     -- Part colors
     if Settings.World.ChangePartColors and not worldColorApplied then
         applyWorldPartColors(Settings.World.AmbientColor)
     elseif not Settings.World.ChangePartColors and worldColorApplied then
         resetWorldPartColors()
     end
+
     -- Rain
     if Settings.World.Rain then
         if #worldRainParts<40 then local p=Instance.new("Part"); p.Name="FleexiWRain"; p.Anchored=true; p.CanCollide=false; p.CastShadow=false; p.Size=Vector3.new(0.1,2,0.1); p.Material=Enum.Material.Neon; p.Color=Color3.fromRGB(150,180,255); p.Transparency=0.3; local hrp=LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart"); if hrp then p.Position=hrp.Position+Vector3.new(math.random(-30,30),math.random(20,40),math.random(-30,30)); p.Parent=workspace; table.insert(worldRainParts,{part=p,life=0}) end end
         for i=#worldRainParts,1,-1 do local r=worldRainParts[i]; r.life=r.life+dt; r.part.Position=r.part.Position-Vector3.new(0,60*dt,0); if r.life>1.5 then r.part:Destroy(); table.remove(worldRainParts,i) end end
     else for _,r in ipairs(worldRainParts) do r.part:Destroy() end; worldRainParts={} end
+
     -- Snow
     if Settings.World.Snow then
         if #worldSnowParts<30 then local p=Instance.new("Part"); p.Name="FleexiWSnow"; p.Anchored=true; p.CanCollide=false; p.CastShadow=false; p.Size=Vector3.new(0.3,0.3,0.3); p.Shape=Enum.PartType.Ball; p.Material=Enum.Material.Neon; p.Color=Color3.fromRGB(240,240,255); p.Transparency=0.1; local hrp=LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart"); if hrp then p.Position=hrp.Position+Vector3.new(math.random(-25,25),math.random(15,35),math.random(-25,25)); p.Parent=workspace; table.insert(worldSnowParts,{part=p,life=0,vx=(math.random()-0.5)*2}) end end
@@ -736,4 +890,4 @@ end)
 local function setupPlayer(plr) if plr==LocalPlayer then return end; CreateESP(plr); plr.CharacterAdded:Connect(function() task.wait(0.5); if ESPObjects[plr] then DestroyESP(ESPObjects[plr]); ESPObjects[plr]=nil end; CreateESP(plr) end) end
 Players.PlayerAdded:Connect(setupPlayer); Players.PlayerRemoving:Connect(function(plr) if ESPObjects[plr] then DestroyESP(ESPObjects[plr]); ESPObjects[plr]=nil end end)
 for _,plr in ipairs(Players:GetPlayers()) do setupPlayer(plr) end
-retranslateAll(); updateAimBtnVis()
+retranslateAll(); updateAimBtnVis(); updateAimModeBtnVis()
