@@ -1,4 +1,5 @@
--- // FLEEXI v1.3 - Ultimate Edition (Fixed: Crosshair, Hands, Sky)
+-- // FLEEXI v1.3 REMAKE - Universal Edition
+-- // Yeni: MissLogs, Console Logs, HitSound, Hit Effect, Death Sound, Hands Fix
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
@@ -6,6 +7,8 @@ local CoreGui = game:GetService("CoreGui")
 local TweenService = game:GetService("TweenService")
 local VirtualUser = game:GetService("VirtualUser")
 local Lighting = game:GetService("Lighting")
+local SoundService = game:GetService("SoundService")
+local StarterGui = game:GetService("StarterGui")
 local Camera = workspace.CurrentCamera
 local LocalPlayer = Players.LocalPlayer
 
@@ -22,6 +25,9 @@ local defaultCSTop = Lighting.ColorShift_Top
 local defaultCSBot = Lighting.ColorShift_Bottom
 local defaultClockTime = Lighting.ClockTime
 
+-- ============================================================
+-- SETTINGS
+-- ============================================================
 local Settings = {
     Aimbot = {
         Enabled = false, Smooth = 0.25, FOV = 120, ShowFOV = true,
@@ -63,6 +69,7 @@ local Settings = {
         FOV = 70, FOVEnabled = false, ForceThirdPerson = false,
         Bhop = false, AntiAFK = false, LockToggleBtn = false,
         HandsEnabled = false, HandsX = 0, HandsY = 0, HandsZ = 0,
+        HandsRotX = 0, HandsRotY = 0, HandsRotZ = 0,
     },
     World = {
         AmbientColor = Color3.fromRGB(128,128,128),
@@ -70,6 +77,27 @@ local Settings = {
         Rain = false, Snow = false,
         AmbientEnabled = false, SkyEnabled = false,
         ChangePartColors = false,
+    },
+    HitMarker = {
+        HitSoundEnabled = false,
+        HitSoundId = "rbxassetid://6333580986",
+        HitSoundVolume = 1,
+        HitEffectEnabled = false,
+        HitEffectColor = Color3.fromRGB(255,0,0),
+        HitEffectDuration = 0.3,
+        DeathSoundEnabled = false,
+        DeathSoundId = "rbxassetid://5765933021",
+        DeathSoundVolume = 1,
+        MissLogEnabled = false,
+        MissLogColor = Color3.fromRGB(255,100,100),
+    },
+    ConsoleLog = {
+        Enabled = false,
+        LogHits = true,
+        LogMisses = true,
+        LogDeaths = true,
+        LogDamage = true,
+        MaxLines = 50,
     },
     Shortcuts = {
         AimBtn = false, EspBtn = false, BhopBtn = false,
@@ -97,9 +125,12 @@ local Settings = {
     Language = "ru",
 }
 
+-- ============================================================
+-- LANGUAGE
+-- ============================================================
 local L = {
     tr = {
-        aim="Aimbot",esp="Görseller",antiaim="Anti-Aim",misc="Diger",settings="Ayarlar",crosshair="Nisangah",world="Dünya",shortcuts="Kisayollar",executor="Executor",
+        aim="Aimbot",esp="Görseller",antiaim="Anti-Aim",misc="Diger",settings="Ayarlar",crosshair="Nisangah",world="Dünya",shortcuts="Kisayollar",executor="Executor",hitmarker="Hit Efektleri",consolelog="Konsol",
         aimbot_on="Aimbot",fov_circle="FOV Dairesi",wall_check="Duvar Kontrolü",smooth="Yumusaklik",fov_size="FOV Boyutu",aim_mode="Mod",
         mode_always="Sürekli",mode_toggle="Toggle",mode_hold="Basili Tut",fov_color="FOV Rengi",aim_360="360 Aimbot",fov_fill="FOV Dolgu",fov_fill_color="Dolgu Rengi",
         target_bone="Hedef",bone_head="Bas",bone_torso="Gövde",bone_random="Rastgele",
@@ -116,7 +147,7 @@ local L = {
         jump_ring="Ziplama Halkasi",ring_start="Halka Renk",ring_fade="Solma",move_trail="Hareket Izi",trail_start="Iz Renk",trail_fade="Iz Solma",
         aa_on="Anti-Aim",aa_mode="Mod",aa_yaw="Yaw Hizi",aa_pitch="Pitch",mode_spin="Spin",mode_back="Geriye",mode_random="Rastgele",mode_jitter="Jitter",
         misc_fov="Kamera FOV",misc_fov_on="FOV Degistir",force_tp="3. Sahis",bhop="Bhop",antiafk="Anti-AFK",
-        hands_on="El Pozisyonu",hands_x="El X",hands_y="El Y",hands_z="El Z",
+        hands_on="El Pozisyonu",hands_x="El X",hands_y="El Y",hands_z="El Z",hands_rx="El Döndür X",hands_ry="El Döndür Y",hands_rz="El Döndür Z",
         theme="Tema",theme_orig="Orijinal",theme_hvh="HvH",theme_mod="Mod Menü",theme_nos="Nostalji",
         particle_type="Parcacik",part_def="Varsayilan",part_snow="Kar",part_rain="Yagmur",part_bh="Karadelik",part_none="Yok",
         particle_speed="Hiz",particle_size="Boyut",
@@ -127,9 +158,12 @@ local L = {
         sc_btn_size="Buton Boyutu",sc_aimhold_lock="AimHold Sabitle",sc_aimhold_size="AimHold Boyut",sc_toggle_size="Toggle Boyut",sc_toggle_lock="Toggle Sabitle",
         sc_aimmode_btn="Aim Mod Butonu",sc_aimmode_lock="Mod Sabitle",sc_aimmode_size="Mod Boyut",
         exec_run="Calistir",exec_clear="Temizle",exec_title="Lua Executor",
+        hit_sound="Isabet Sesi",hit_sound_vol="Ses Seviyesi",hit_effect="Isabet Efekti",hit_effect_color="Efekt Rengi",hit_effect_dur="Efekt Süresi",
+        death_sound="Ölüm Sesi",death_sound_vol="Ölüm Ses Sev.",miss_log="Kacirilma Logu",miss_log_color="Log Rengi",
+        console_on="Konsol Logu",log_hits="Isabetleri Logla",log_misses="Kacirmalari Logla",log_deaths="Ölümleri Logla",log_damage="Hasari Logla",max_lines="Maks Satir",
     },
     en = {
-        aim="Aimbot",esp="Visuals",antiaim="Anti-Aim",misc="Misc",settings="Settings",crosshair="Crosshair",world="World",shortcuts="Shortcuts",executor="Executor",
+        aim="Aimbot",esp="Visuals",antiaim="Anti-Aim",misc="Misc",settings="Settings",crosshair="Crosshair",world="World",shortcuts="Shortcuts",executor="Executor",hitmarker="Hit FX",consolelog="Console",
         aimbot_on="Aimbot",fov_circle="FOV Circle",wall_check="Wall Check",smooth="Smoothness",fov_size="FOV Size",aim_mode="Mode",
         mode_always="Always",mode_toggle="Toggle",mode_hold="Hold",fov_color="FOV Color",aim_360="360 Aimbot",fov_fill="FOV Fill",fov_fill_color="Fill Color",
         target_bone="Target",bone_head="Head",bone_torso="Torso",bone_random="Random",
@@ -146,7 +180,7 @@ local L = {
         jump_ring="Jump Ring",ring_start="Ring Color",ring_fade="Fade",move_trail="Trail",trail_start="Trail Color",trail_fade="Trail Fade",
         aa_on="Anti-Aim",aa_mode="Mode",aa_yaw="Yaw Speed",aa_pitch="Pitch",mode_spin="Spin",mode_back="Backward",mode_random="Random",mode_jitter="Jitter",
         misc_fov="Camera FOV",misc_fov_on="Change FOV",force_tp="3rd Person",bhop="Bhop",antiafk="Anti-AFK",
-        hands_on="Hands Position",hands_x="Hands X",hands_y="Hands Y",hands_z="Hands Z",
+        hands_on="Hands Position",hands_x="Hands X",hands_y="Hands Y",hands_z="Hands Z",hands_rx="Hands Rot X",hands_ry="Hands Rot Y",hands_rz="Hands Rot Z",
         theme="Theme",theme_orig="Original",theme_hvh="HvH",theme_mod="Mod Menu",theme_nos="Nostalgia",
         particle_type="Particles",part_def="Default",part_snow="Snow",part_rain="Rain",part_bh="BlackHole",part_none="None",
         particle_speed="Speed",particle_size="Size",
@@ -157,9 +191,12 @@ local L = {
         sc_btn_size="Button Size",sc_aimhold_lock="Lock AimHold",sc_aimhold_size="AimHold Size",sc_toggle_size="Toggle Size",sc_toggle_lock="Lock Toggle",
         sc_aimmode_btn="Aim Mode Btn",sc_aimmode_lock="Lock Mode",sc_aimmode_size="Mode Size",
         exec_run="Run",exec_clear="Clear",exec_title="Lua Executor",
+        hit_sound="Hit Sound",hit_sound_vol="Hit Volume",hit_effect="Hit Effect",hit_effect_color="Effect Color",hit_effect_dur="Effect Duration",
+        death_sound="Death Sound",death_sound_vol="Death Volume",miss_log="Miss Log",miss_log_color="Log Color",
+        console_on="Console Log",log_hits="Log Hits",log_misses="Log Misses",log_deaths="Log Deaths",log_damage="Log Damage",max_lines="Max Lines",
     },
     ru = {
-        aim="Аимбот",esp="Визуалы",antiaim="Анти-Аим",misc="Разное",settings="Настройки",crosshair="Прицел",world="Мир",shortcuts="Кнопки",executor="Executor",
+        aim="Аимбот",esp="Визуалы",antiaim="Анти-Аим",misc="Разное",settings="Настройки",crosshair="Прицел",world="Мир",shortcuts="Кнопки",executor="Executor",hitmarker="Хит FX",consolelog="Консоль",
         aimbot_on="Аимбот",fov_circle="Круг FOV",wall_check="Проверка стен",smooth="Плавность",fov_size="Размер FOV",aim_mode="Режим",
         mode_always="Всегда",mode_toggle="Тоггл",mode_hold="Удержание",fov_color="Цвет FOV",aim_360="360 Аимбот",fov_fill="Заливка FOV",fov_fill_color="Цвет заливки",
         target_bone="Цель",bone_head="Голова",bone_torso="Торс",bone_random="Случайно",
@@ -176,7 +213,7 @@ local L = {
         jump_ring="Кольцо",ring_start="Цвет кольца",ring_fade="Затухание",move_trail="След",trail_start="Цвет следа",trail_fade="Затухание",
         aa_on="Анти-Аим",aa_mode="Режим",aa_yaw="Скорость Yaw",aa_pitch="Pitch",mode_spin="Спин",mode_back="Назад",mode_random="Случайный",mode_jitter="Джиттер",
         misc_fov="FOV камеры",misc_fov_on="Изменить FOV",force_tp="Третье лицо",bhop="Bhop",antiafk="Анти-АФК",
-        hands_on="Позиция рук",hands_x="Руки X",hands_y="Руки Y",hands_z="Руки Z",
+        hands_on="Позиция рук",hands_x="Руки X",hands_y="Руки Y",hands_z="Руки Z",hands_rx="Поворот X",hands_ry="Поворот Y",hands_rz="Поворот Z",
         theme="Тема",theme_orig="Оригинал",theme_hvh="HvH",theme_mod="Мод-меню",theme_nos="Ностальгия",
         particle_type="Частицы",part_def="По умолч.",part_snow="Снег",part_rain="Дождь",part_bh="Чёрная дыра",part_none="Нет",
         particle_speed="Скорость",particle_size="Размер",
@@ -187,22 +224,31 @@ local L = {
         sc_btn_size="Размер кнопок",sc_aimhold_lock="Закрепить AimHold",sc_aimhold_size="Размер AimHold",sc_toggle_size="Размер Toggle",sc_toggle_lock="Закрепить Toggle",
         sc_aimmode_btn="Кнопка режима",sc_aimmode_lock="Закрепить режим",sc_aimmode_size="Размер режима",
         exec_run="Запустить",exec_clear="Очистить",exec_title="Lua Executor",
+        hit_sound="Звук попадания",hit_sound_vol="Громкость хита",hit_effect="Эффект попадания",hit_effect_color="Цвет эффекта",hit_effect_dur="Длит. эффекта",
+        death_sound="Звук смерти",death_sound_vol="Громкость смерти",miss_log="Лог промахов",miss_log_color="Цвет лога",
+        console_on="Лог консоли",log_hits="Логировать хиты",log_misses="Логировать промахи",log_deaths="Логировать смерти",log_damage="Логировать урон",max_lines="Макс строк",
     },
 }
+
 local function T(key) return (L[Settings.Language] and L[Settings.Language][key]) or L.en[key] or key end
 local translatables = {}
 local function registerText(obj,key,prefix) translatables[obj]={key=key,prefix=prefix or ""}; obj.Text=(prefix or "")..T(key) end
 local function retranslateAll() for obj,d in pairs(translatables) do if obj and obj.Parent then obj.Text=d.prefix..T(d.key) end end end
 
+-- ============================================================
+-- SCREENGUI
+-- ============================================================
 local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name="FleexiV13U"
+ScreenGui.Name="FleexiV13R"
 ScreenGui.ResetOnSpawn=false
 ScreenGui.ZIndexBehavior=Enum.ZIndexBehavior.Sibling
 ScreenGui.IgnoreGuiInset=true
 pcall(function() ScreenGui.Parent=CoreGui end)
 if not ScreenGui.Parent or ScreenGui.Parent~=CoreGui then ScreenGui.Parent=LocalPlayer:WaitForChild("PlayerGui") end
 
+-- ============================================================
 -- WATERMARK
+-- ============================================================
 local WatermarkFrame=Instance.new("Frame",ScreenGui)
 WatermarkFrame.Size=UDim2.new(0,300,0,30)
 WatermarkFrame.Position=UDim2.new(0.5,-150,0,6)
@@ -213,15 +259,17 @@ WatermarkFrame.ZIndex=250
 Instance.new("UICorner",WatermarkFrame).CornerRadius=UDim.new(0,10)
 local wmStroke=Instance.new("UIStroke",WatermarkFrame); wmStroke.Color=Color3.fromRGB(130,0,255); wmStroke.Thickness=1.5
 local wmAccent=Instance.new("Frame",WatermarkFrame); wmAccent.Size=UDim2.new(1,0,0,2); wmAccent.BackgroundColor3=Color3.fromRGB(130,0,255); wmAccent.BorderSizePixel=0; wmAccent.ZIndex=251; Instance.new("UICorner",wmAccent).CornerRadius=UDim.new(0,10)
-local wmTitle=Instance.new("TextLabel",WatermarkFrame); wmTitle.Size=UDim2.new(0,80,1,0); wmTitle.Position=UDim2.new(0,10,0,0); wmTitle.BackgroundTransparency=1; wmTitle.Text="FLEEXI v1.3"; wmTitle.TextColor3=Color3.fromRGB(220,140,255); wmTitle.Font=Enum.Font.GothamBold; wmTitle.TextSize=13; wmTitle.TextXAlignment=Enum.TextXAlignment.Left; wmTitle.ZIndex=252
-local wmLink=Instance.new("TextLabel",WatermarkFrame); wmLink.Size=UDim2.new(0,190,1,0); wmLink.Position=UDim2.new(0,100,0,0); wmLink.BackgroundTransparency=1; wmLink.Text="t.me/Fleeximods"; wmLink.TextColor3=Color3.fromRGB(160,100,220); wmLink.Font=Enum.Font.GothamMedium; wmLink.TextSize=12; wmLink.TextXAlignment=Enum.TextXAlignment.Right; wmLink.ZIndex=252
+local wmTitle=Instance.new("TextLabel",WatermarkFrame); wmTitle.Size=UDim2.new(0,100,1,0); wmTitle.Position=UDim2.new(0,10,0,0); wmTitle.BackgroundTransparency=1; wmTitle.Text="FLEEXI v1.3R"; wmTitle.TextColor3=Color3.fromRGB(220,140,255); wmTitle.Font=Enum.Font.GothamBold; wmTitle.TextSize=13; wmTitle.TextXAlignment=Enum.TextXAlignment.Left; wmTitle.ZIndex=252
+local wmLink=Instance.new("TextLabel",WatermarkFrame); wmLink.Size=UDim2.new(0,180,1,0); wmLink.Position=UDim2.new(0,110,0,0); wmLink.BackgroundTransparency=1; wmLink.Text="t.me/Fleeximods"; wmLink.TextColor3=Color3.fromRGB(160,100,220); wmLink.Font=Enum.Font.GothamMedium; wmLink.TextSize=12; wmLink.TextXAlignment=Enum.TextXAlignment.Right; wmLink.ZIndex=252
 
--- LOADING
+-- ============================================================
+-- LOADING SCREEN
+-- ============================================================
 local LoadFrame=Instance.new("Frame",ScreenGui); LoadFrame.Size=UDim2.new(1,0,1,0); LoadFrame.BackgroundColor3=Color3.fromRGB(5,2,12); LoadFrame.BorderSizePixel=0; LoadFrame.ZIndex=999
 local LoadLogo=Instance.new("TextLabel",LoadFrame); LoadLogo.Size=UDim2.new(0,90,0,90); LoadLogo.Position=UDim2.new(0.5,-45,0.5,-100); LoadLogo.BackgroundColor3=Color3.fromRGB(90,0,200); LoadLogo.Text="F"; LoadLogo.TextSize=46; LoadLogo.Font=Enum.Font.GothamBold; LoadLogo.TextColor3=Color3.fromRGB(255,255,255); LoadLogo.ZIndex=1000; Instance.new("UICorner",LoadLogo).CornerRadius=UDim.new(1,0)
 local logoStroke=Instance.new("UIStroke",LoadLogo); logoStroke.Color=Color3.fromRGB(180,80,255); logoStroke.Thickness=3
 local LoadTitle=Instance.new("TextLabel",LoadFrame); LoadTitle.Size=UDim2.new(1,0,0,50); LoadTitle.Position=UDim2.new(0,0,0.5,5); LoadTitle.BackgroundTransparency=1; LoadTitle.Text="FLEEXI"; LoadTitle.TextColor3=Color3.fromRGB(220,140,255); LoadTitle.Font=Enum.Font.GothamBold; LoadTitle.TextSize=42; LoadTitle.ZIndex=1000
-local LoadSub=Instance.new("TextLabel",LoadFrame); LoadSub.Size=UDim2.new(1,0,0,20); LoadSub.Position=UDim2.new(0,0,0.5,55); LoadSub.BackgroundTransparency=1; LoadSub.Text="v1.3"; LoadSub.TextColor3=Color3.fromRGB(150,80,200); LoadSub.Font=Enum.Font.GothamMedium; LoadSub.TextSize=14; LoadSub.ZIndex=1000
+local LoadSub=Instance.new("TextLabel",LoadFrame); LoadSub.Size=UDim2.new(1,0,0,20); LoadSub.Position=UDim2.new(0,0,0.5,55); LoadSub.BackgroundTransparency=1; LoadSub.Text="v1.3 Remake"; LoadSub.TextColor3=Color3.fromRGB(150,80,200); LoadSub.Font=Enum.Font.GothamMedium; LoadSub.TextSize=14; LoadSub.ZIndex=1000
 local LoadBarBG=Instance.new("Frame",LoadFrame); LoadBarBG.Size=UDim2.new(0,240,0,6); LoadBarBG.Position=UDim2.new(0.5,-120,0.5,90); LoadBarBG.BackgroundColor3=Color3.fromRGB(25,12,45); LoadBarBG.BorderSizePixel=0; LoadBarBG.ZIndex=1000; Instance.new("UICorner",LoadBarBG).CornerRadius=UDim.new(1,0)
 local LoadBar=Instance.new("Frame",LoadBarBG); LoadBar.Size=UDim2.new(0,0,1,0); LoadBar.BackgroundColor3=Color3.fromRGB(140,0,255); LoadBar.BorderSizePixel=0; LoadBar.ZIndex=1001; Instance.new("UICorner",LoadBar).CornerRadius=UDim.new(1,0)
 task.spawn(function()
@@ -236,11 +284,263 @@ task.spawn(function()
     task.wait(0.55); LoadFrame:Destroy()
 end)
 
+-- ============================================================
+-- CONTAINERS
+-- ============================================================
 local ESPContainer=Instance.new("Frame",ScreenGui); ESPContainer.Size=UDim2.new(1,0,1,0); ESPContainer.BackgroundTransparency=1; ESPContainer.ZIndex=1
 local FOVContainer=Instance.new("Frame",ScreenGui); FOVContainer.Size=UDim2.new(1,0,1,0); FOVContainer.BackgroundTransparency=1; FOVContainer.ZIndex=50
 local CrosshairContainer=Instance.new("Frame",ScreenGui); CrosshairContainer.Size=UDim2.new(1,0,1,0); CrosshairContainer.BackgroundTransparency=1; CrosshairContainer.ZIndex=55
 
+-- ============================================================
+-- CONSOLE LOG SYSTEM
+-- ============================================================
+local ConsoleLogFrame = Instance.new("Frame", ScreenGui)
+ConsoleLogFrame.Size = UDim2.new(0, 320, 0, 200)
+ConsoleLogFrame.Position = UDim2.new(1, -330, 0, 44)
+ConsoleLogFrame.BackgroundColor3 = Color3.fromRGB(8, 4, 16)
+ConsoleLogFrame.BackgroundTransparency = 0.15
+ConsoleLogFrame.BorderSizePixel = 0
+ConsoleLogFrame.ZIndex = 240
+ConsoleLogFrame.Visible = false
+ConsoleLogFrame.ClipsDescendants = true
+Instance.new("UICorner", ConsoleLogFrame).CornerRadius = UDim.new(0, 8)
+local clStroke = Instance.new("UIStroke", ConsoleLogFrame); clStroke.Color = Color3.fromRGB(100, 0, 200); clStroke.Thickness = 1
+local clTitle = Instance.new("TextLabel", ConsoleLogFrame)
+clTitle.Size = UDim2.new(1, 0, 0, 22)
+clTitle.BackgroundColor3 = Color3.fromRGB(15, 5, 30)
+clTitle.BackgroundTransparency = 0.3
+clTitle.Text = "FLEEXI Console"
+clTitle.TextColor3 = Color3.fromRGB(180, 100, 255)
+clTitle.Font = Enum.Font.GothamBold
+clTitle.TextSize = 11
+clTitle.BorderSizePixel = 0
+clTitle.ZIndex = 241
+Instance.new("UICorner", clTitle).CornerRadius = UDim.new(0, 8)
+
+local clScroll = Instance.new("ScrollingFrame", ConsoleLogFrame)
+clScroll.Size = UDim2.new(1, -8, 1, -26)
+clScroll.Position = UDim2.new(0, 4, 0, 24)
+clScroll.BackgroundTransparency = 1
+clScroll.BorderSizePixel = 0
+clScroll.ScrollBarThickness = 3
+clScroll.ScrollBarImageColor3 = Color3.fromRGB(120, 0, 255)
+clScroll.CanvasSize = UDim2.new(0, 0, 0, 0)
+clScroll.AutomaticCanvasSize = Enum.AutomaticSize.Y
+clScroll.ZIndex = 241
+local clLayout = Instance.new("UIListLayout", clScroll)
+clLayout.SortOrder = Enum.SortOrder.LayoutOrder
+clLayout.Padding = UDim.new(0, 2)
+
+local consoleLines = {}
+local consoleLineCount = 0
+
+local function addConsoleLog(text, color)
+    if not Settings.ConsoleLog.Enabled then return end
+    consoleLineCount = consoleLineCount + 1
+    local lbl = Instance.new("TextLabel", clScroll)
+    lbl.Size = UDim2.new(1, 0, 0, 14)
+    lbl.BackgroundTransparency = 1
+    lbl.Text = "[" .. os.date("%H:%M:%S") .. "] " .. text
+    lbl.TextColor3 = color or Color3.fromRGB(200, 180, 240)
+    lbl.Font = Enum.Font.Code
+    lbl.TextSize = 10
+    lbl.TextXAlignment = Enum.TextXAlignment.Left
+    lbl.TextWrapped = true
+    lbl.ZIndex = 242
+    lbl.LayoutOrder = consoleLineCount
+    table.insert(consoleLines, lbl)
+    while #consoleLines > Settings.ConsoleLog.MaxLines do
+        consoleLines[1]:Destroy()
+        table.remove(consoleLines, 1)
+    end
+    ConsoleLogFrame.Visible = Settings.ConsoleLog.Enabled
+end
+
+-- ============================================================
+-- MISS LOG SYSTEM (on-screen feed)
+-- ============================================================
+local MissLogFrame = Instance.new("Frame", ScreenGui)
+MissLogFrame.Size = UDim2.new(0, 260, 0, 160)
+MissLogFrame.Position = UDim2.new(0, 10, 0, 44)
+MissLogFrame.BackgroundTransparency = 1
+MissLogFrame.BorderSizePixel = 0
+MissLogFrame.ZIndex = 230
+MissLogFrame.ClipsDescendants = true
+
+local mlLayout = Instance.new("UIListLayout", MissLogFrame)
+mlLayout.SortOrder = Enum.SortOrder.LayoutOrder
+mlLayout.Padding = UDim.new(0, 2)
+mlLayout.VerticalAlignment = Enum.VerticalAlignment.Bottom
+
+local missLogOrder = 0
+local function addMissLog(text)
+    if not Settings.HitMarker.MissLogEnabled then return end
+    missLogOrder = missLogOrder + 1
+    local lbl = Instance.new("TextLabel", MissLogFrame)
+    lbl.Size = UDim2.new(1, 0, 0, 16)
+    lbl.BackgroundTransparency = 1
+    lbl.Text = text
+    lbl.TextColor3 = Settings.HitMarker.MissLogColor
+    lbl.Font = Enum.Font.GothamBold
+    lbl.TextSize = 12
+    lbl.TextXAlignment = Enum.TextXAlignment.Left
+    lbl.TextStrokeTransparency = 0
+    lbl.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
+    lbl.ZIndex = 231
+    lbl.LayoutOrder = missLogOrder
+    task.delay(3, function()
+        TweenService:Create(lbl, TweenInfo.new(0.5), {TextTransparency = 1, TextStrokeTransparency = 1}):Play()
+        task.wait(0.55)
+        lbl:Destroy()
+    end)
+end
+
+-- ============================================================
+-- HIT SOUND / HIT EFFECT / DEATH SOUND SYSTEM
+-- ============================================================
+local function playHitSound()
+    if not Settings.HitMarker.HitSoundEnabled then return end
+    pcall(function()
+        local snd = Instance.new("Sound")
+        snd.SoundId = Settings.HitMarker.HitSoundId
+        snd.Volume = Settings.HitMarker.HitSoundVolume
+        snd.PlayOnRemove = false
+        snd.Parent = SoundService
+        snd:Play()
+        game:GetService("Debris"):AddItem(snd, 2)
+    end)
+end
+
+local function playDeathSound()
+    if not Settings.HitMarker.DeathSoundEnabled then return end
+    pcall(function()
+        local snd = Instance.new("Sound")
+        snd.SoundId = Settings.HitMarker.DeathSoundId
+        snd.Volume = Settings.HitMarker.DeathSoundVolume
+        snd.PlayOnRemove = false
+        snd.Parent = SoundService
+        snd:Play()
+        game:GetService("Debris"):AddItem(snd, 3)
+    end)
+end
+
+local function showHitEffect()
+    if not Settings.HitMarker.HitEffectEnabled then return end
+    local vp = Camera.ViewportSize
+    local cx = vp.X / 2
+    local cy = vp.Y / 2
+    -- Hitmarker X lines
+    for i = 1, 4 do
+        local line = Instance.new("Frame", ScreenGui)
+        line.BackgroundColor3 = Settings.HitMarker.HitEffectColor
+        line.BorderSizePixel = 0
+        line.AnchorPoint = Vector2.new(0.5, 0.5)
+        line.ZIndex = 260
+        line.Size = UDim2.new(0, 16, 0, 2)
+        local angle = (i - 1) * 90 + 45
+        local rad = math.rad(angle)
+        local dist = 8
+        line.Position = UDim2.new(0, cx + math.cos(rad) * dist, 0, cy + math.sin(rad) * dist)
+        line.Rotation = angle
+        TweenService:Create(line, TweenInfo.new(Settings.HitMarker.HitEffectDuration), {BackgroundTransparency = 1}):Play()
+        task.delay(Settings.HitMarker.HitEffectDuration + 0.05, function() line:Destroy() end)
+    end
+    -- Screen flash
+    local flash = Instance.new("Frame", ScreenGui)
+    flash.Size = UDim2.new(1, 0, 1, 0)
+    flash.BackgroundColor3 = Settings.HitMarker.HitEffectColor
+    flash.BackgroundTransparency = 0.85
+    flash.BorderSizePixel = 0
+    flash.ZIndex = 255
+    TweenService:Create(flash, TweenInfo.new(Settings.HitMarker.HitEffectDuration * 0.7), {BackgroundTransparency = 1}):Play()
+    task.delay(Settings.HitMarker.HitEffectDuration, function() flash:Destroy() end)
+end
+
+-- ============================================================
+-- UNIVERSAL HIT/MISS/DEATH DETECTION
+-- ============================================================
+local trackedHealths = {}
+local lastAimTarget = nil
+local lastShotTick = 0
+
+local function setupHealthTracking(plr)
+    if plr == LocalPlayer then return end
+    local function onCharAdded(char)
+        task.wait(0.5)
+        local hum = char:FindFirstChildOfClass("Humanoid")
+        if not hum then return end
+        trackedHealths[plr] = hum.Health
+        hum.HealthChanged:Connect(function(newHP)
+            local oldHP = trackedHealths[plr] or hum.MaxHealth
+            local dmg = oldHP - newHP
+            trackedHealths[plr] = newHP
+            if dmg > 0.1 then
+                -- Someone took damage, check if we likely caused it
+                if lastAimTarget == plr or (tick() - lastShotTick < 0.5) then
+                    playHitSound()
+                    showHitEffect()
+                    if Settings.ConsoleLog.LogHits then
+                        addConsoleLog("HIT: " .. plr.Name .. " -" .. math.floor(dmg) .. " HP", Color3.fromRGB(100, 255, 100))
+                    end
+                    if Settings.ConsoleLog.LogDamage then
+                        addConsoleLog("DMG: " .. math.floor(dmg) .. " → " .. plr.Name .. " (" .. math.floor(newHP) .. " HP left)", Color3.fromRGB(255, 200, 80))
+                    end
+                end
+            end
+            if newHP <= 0 then
+                playDeathSound()
+                if Settings.ConsoleLog.LogDeaths then
+                    addConsoleLog("DEATH: " .. plr.Name .. " eliminated", Color3.fromRGB(255, 80, 80))
+                end
+            end
+        end)
+    end
+    if plr.Character then onCharAdded(plr.Character) end
+    plr.CharacterAdded:Connect(onCharAdded)
+end
+
+-- Track mouse clicks for miss detection
+UserInputService.InputBegan:Connect(function(inp, gpe)
+    if gpe then return end
+    if inp.UserInputType == Enum.UserInputType.MouseButton1 then
+        lastShotTick = tick()
+        -- Check if we have a target under crosshair
+        local vp = Camera.ViewportSize
+        local cx, cy = vp.X / 2, vp.Y / 2
+        local ray = Camera:ViewportPointToRay(cx, cy)
+        local params = RaycastParams.new()
+        params.FilterType = Enum.RaycastFilterType.Exclude
+        local ign = {}
+        if LocalPlayer.Character then table.insert(ign, LocalPlayer.Character) end
+        params.FilterDescendantsInstances = ign
+        local result = workspace:Raycast(ray.Origin, ray.Direction * 1000, params)
+        local hitPlayer = false
+        if result and result.Instance then
+            for _, plr in ipairs(Players:GetPlayers()) do
+                if plr ~= LocalPlayer and plr.Character and result.Instance:IsDescendantOf(plr.Character) then
+                    hitPlayer = true
+                    lastAimTarget = plr
+                    break
+                end
+            end
+        end
+        if not hitPlayer then
+            -- Delayed miss check
+            task.delay(0.15, function()
+                if tick() - lastShotTick < 0.3 then
+                    addMissLog("MISS @ " .. os.date("%H:%M:%S"))
+                    if Settings.ConsoleLog.LogMisses then
+                        addConsoleLog("MISS: Shot missed target", Color3.fromRGB(255, 100, 100))
+                    end
+                end
+            end)
+        end
+    end
+end)
+
+-- ============================================================
 -- HOLD BUTTON
+-- ============================================================
 local holdActive = false
 local AimHoldBtn=Instance.new("TextButton",ScreenGui)
 AimHoldBtn.Size=UDim2.new(0,60,0,60)
@@ -280,7 +580,9 @@ UserInputService.InputBegan:Connect(function(inp,gpe) if gpe then return end; if
 UserInputService.InputEnded:Connect(function(inp) if inp.KeyCode==Enum.KeyCode.E and Settings.Aimbot.Mode=="Hold" then holdActive=false end end)
 local function updateAimBtnVis() AimHoldBtn.Visible=Settings.Aimbot.Enabled and (Settings.Aimbot.Mode=="Hold" or Settings.Aimbot.Mode=="Toggle") end
 
+-- ============================================================
 -- AIM MODE BUTTON
+-- ============================================================
 local aimModeNames = {Always="ALL", Toggle="TGL", Hold="HLD"}
 local aimModeOrder = {"Always","Toggle","Hold"}
 local AimModeBtn=Instance.new("TextButton",ScreenGui)
@@ -324,7 +626,9 @@ local function updateAimModeBtnVis()
     AimModeBtn.Text=aimModeNames[Settings.Aimbot.Mode] or "ALL"
 end
 
+-- ============================================================
 -- SHORTCUT BUTTONS
+-- ============================================================
 local function makeShortcutBtn(text,pos)
     local btn=Instance.new("TextButton",ScreenGui); btn.Size=UDim2.new(0,Settings.Shortcuts.BtnSize,0,Settings.Shortcuts.BtnSize); btn.Position=pos; btn.BackgroundColor3=Color3.fromRGB(15,5,30); btn.Text=text; btn.TextSize=9; btn.Font=Enum.Font.GothamBold; btn.TextColor3=Color3.fromRGB(140,60,220); btn.ZIndex=199; btn.AutoButtonColor=false; btn.Visible=false; Instance.new("UICorner",btn).CornerRadius=UDim.new(1,0); Instance.new("UIStroke",btn).Color=Color3.fromRGB(80,0,180)
     local locked=false; local drag2,ds2,sp2
@@ -341,10 +645,8 @@ local function updateAllBtnSizes()
     scAimBtn.Size=UDim2.new(0,sz,0,sz)
     scEspBtn.Size=UDim2.new(0,sz,0,sz)
     scBhopBtn.Size=UDim2.new(0,sz,0,sz)
-    local ahsz=Settings.Shortcuts.AimHoldBtnSize
-    AimHoldBtn.Size=UDim2.new(0,ahsz,0,ahsz)
-    local amsz=Settings.Shortcuts.AimModeBtnSize
-    AimModeBtn.Size=UDim2.new(0,amsz,0,amsz)
+    AimHoldBtn.Size=UDim2.new(0,Settings.Shortcuts.AimHoldBtnSize,0,Settings.Shortcuts.AimHoldBtnSize)
+    AimModeBtn.Size=UDim2.new(0,Settings.Shortcuts.AimModeBtnSize,0,Settings.Shortcuts.AimModeBtnSize)
 end
 
 local scAimState,scEspState,scBhopState=false,true,false
@@ -352,7 +654,9 @@ scAimBtn.MouseButton1Click:Connect(function() scAimState=not scAimState; Setting
 scEspBtn.MouseButton1Click:Connect(function() scEspState=not scEspState; Settings.ESP.Enabled=scEspState; scEspBtn.BackgroundColor3=scEspState and Color3.fromRGB(90,0,200) or Color3.fromRGB(15,5,30) end)
 scBhopBtn.MouseButton1Click:Connect(function() scBhopState=not scBhopState; Settings.Misc.Bhop=scBhopState; scBhopBtn.BackgroundColor3=scBhopState and Color3.fromRGB(90,0,200) or Color3.fromRGB(15,5,30) end)
 
+-- ============================================================
 -- TOGGLE BUTTON
+-- ============================================================
 local ToggleBtn=Instance.new("TextButton",ScreenGui)
 ToggleBtn.Size=UDim2.new(0,50,0,50)
 ToggleBtn.Position=UDim2.new(0,10,0.5,-25)
@@ -380,12 +684,15 @@ UserInputService.InputChanged:Connect(function(inp)
 end)
 UserInputService.InputBegan:Connect(function(inp,gpe) if gpe then return end; if inp.KeyCode==Enum.KeyCode.Insert then ToggleBtn.MouseButton1Click:Fire() end end)
 
+-- ============================================================
 -- MAIN FRAME
-local MENU_W,MENU_H=660,420
+-- ============================================================
+local MENU_W,MENU_H=680,440
 local Main=Instance.new("Frame",ScreenGui); Main.Size=UDim2.new(0,MENU_W,0,MENU_H); Main.Position=UDim2.new(0.5,-MENU_W/2,0.5,-MENU_H/2); Main.BackgroundColor3=Settings.Settings.GuiBgColor; Main.BorderSizePixel=0; Main.Visible=false; Main.ZIndex=100; Main.ClipsDescendants=true
 local mainCorner=Instance.new("UICorner",Main); mainCorner.CornerRadius=UDim.new(0,14)
 local mStr=Instance.new("UIStroke",Main); mStr.Color=Settings.Settings.GuiBorderColor; mStr.Thickness=1.8
 
+-- Particles
 local ParticleFrame=Instance.new("Frame",Main); ParticleFrame.Size=UDim2.new(1,0,1,0); ParticleFrame.BackgroundTransparency=1; ParticleFrame.BorderSizePixel=0; ParticleFrame.ZIndex=99; ParticleFrame.ClipsDescendants=true
 local particles={}
 local function clearParticles() for _,p in ipairs(particles) do if p.obj then p.obj:Destroy() end end; particles={} end
@@ -400,15 +707,21 @@ end
 local pLimits={Default=18,Snow=25,Rain=30,BlackHole=30}
 RunService.RenderStepped:Connect(function(dt) if not Main.Visible then return end; local kind=Settings.Settings.ParticleType; local spd=Settings.Settings.ParticleSpeed; if kind=="None" then clearParticles(); return end; while #particles<(pLimits[kind] or 20) do makeParticle() end; for i=#particles,1,-1 do local prt=particles[i]; if prt.kind~=kind then prt.obj:Destroy(); table.remove(particles,i) else if kind=="Default" then local pos=prt.obj.Position; prt.pulse=prt.pulse+dt*1.5; local nx=pos.X.Scale+prt.vx*dt*60*spd; local ny=pos.Y.Scale+prt.vy*dt*60*spd; if nx<-0.08 then nx=1.08 end; if nx>1.08 then nx=-0.08 end; if ny<-0.08 then ny=1.08 end; if ny>1.08 then ny=-0.08 end; prt.obj.Position=UDim2.new(nx,0,ny,0); if prt.core then prt.core.BackgroundTransparency=prt.baseAlpha+math.sin(prt.pulse)*0.15 end elseif kind=="Snow" then prt.sway=prt.sway+dt*1.8*spd; local pos=prt.obj.Position; local nx=pos.X.Scale+(prt.vx+math.sin(prt.sway)*prt.swayAmp)*dt*60*spd; local ny=pos.Y.Scale+prt.vy*dt*60*spd; if ny>1.1 then ny=-0.08; nx=math.random() end; prt.obj.Position=UDim2.new(nx,0,ny,0) elseif kind=="Rain" then local pos=prt.obj.Position; local nx=pos.X.Scale+prt.vx*dt*60*spd; local ny=pos.Y.Scale+prt.vy*dt*60*spd; if ny>1.15 then ny=-0.1; nx=math.random() end; prt.obj.Position=UDim2.new(nx,0,ny,0) elseif kind=="BlackHole" then prt.angle=prt.angle+dt*prt.spiralSpeed*spd; prt.radius=prt.radius-dt*prt.shrinkSpeed*spd; if prt.radius<=0.015 then prt.obj:Destroy(); table.remove(particles,i) else prt.obj.Position=UDim2.new(0.5+math.cos(prt.angle)*prt.radius,0,0.5+math.sin(prt.angle)*prt.radius,0) end end end end end)
 
+-- ============================================================
 -- TOP BAR
+-- ============================================================
 local accentLine=Instance.new("Frame",Main); accentLine.Size=UDim2.new(1,0,0,2); accentLine.BackgroundColor3=Settings.Settings.GuiAccentColor; accentLine.BorderSizePixel=0; accentLine.ZIndex=101
 local TopBar=Instance.new("Frame",Main); TopBar.Size=UDim2.new(1,0,0,46); TopBar.Position=UDim2.new(0,0,0,2); TopBar.BackgroundTransparency=1; TopBar.ZIndex=101
 local logoBg=Instance.new("Frame",TopBar); logoBg.Size=UDim2.new(0,32,0,32); logoBg.Position=UDim2.new(0,12,0.5,-16); logoBg.BackgroundColor3=Color3.fromRGB(90,0,200); logoBg.ZIndex=102; Instance.new("UICorner",logoBg).CornerRadius=UDim.new(0,8)
 local logoTxt=Instance.new("TextLabel",logoBg); logoTxt.Size=UDim2.new(1,0,1,0); logoTxt.BackgroundTransparency=1; logoTxt.Text="F"; logoTxt.TextSize=16; logoTxt.Font=Enum.Font.GothamBold; logoTxt.TextColor3=Color3.fromRGB(255,255,255); logoTxt.ZIndex=103
 local TitleLbl=Instance.new("TextLabel",TopBar); TitleLbl.Size=UDim2.new(0,120,1,0); TitleLbl.Position=UDim2.new(0,52,0,0); TitleLbl.BackgroundTransparency=1; TitleLbl.Text="FLEEXI"; TitleLbl.TextColor3=Color3.fromRGB(220,140,255); TitleLbl.Font=Enum.Font.GothamBold; TitleLbl.TextSize=20; TitleLbl.TextXAlignment=Enum.TextXAlignment.Left; TitleLbl.ZIndex=102
-local VerLbl=Instance.new("TextLabel",TopBar); VerLbl.Size=UDim2.new(0,34,0,14); VerLbl.Position=UDim2.new(0,155,0.5,-7); VerLbl.BackgroundColor3=Color3.fromRGB(60,0,130); VerLbl.BorderSizePixel=0; VerLbl.Text="v1.3"; VerLbl.TextColor3=Color3.fromRGB(220,180,255); VerLbl.Font=Enum.Font.GothamBold; VerLbl.TextSize=9; VerLbl.ZIndex=102; Instance.new("UICorner",VerLbl).CornerRadius=UDim.new(0,4)
+local VerLbl=Instance.new("TextLabel",TopBar); VerLbl.Size=UDim2.new(0,54,0,14); VerLbl.Position=UDim2.new(0,155,0.5,-7); VerLbl.BackgroundColor3=Color3.fromRGB(60,0,130); VerLbl.BorderSizePixel=0; VerLbl.Text="v1.3 R"; VerLbl.TextColor3=Color3.fromRGB(220,180,255); VerLbl.Font=Enum.Font.GothamBold; VerLbl.TextSize=9; VerLbl.ZIndex=102; Instance.new("UICorner",VerLbl).CornerRadius=UDim.new(0,4)
 local CloseBtnMain=Instance.new("TextButton",TopBar); CloseBtnMain.Size=UDim2.new(0,30,0,30); CloseBtnMain.Position=UDim2.new(1,-40,0.5,-15); CloseBtnMain.BackgroundColor3=Color3.fromRGB(25,8,45); CloseBtnMain.Text="X"; CloseBtnMain.TextColor3=Color3.fromRGB(180,80,255); CloseBtnMain.Font=Enum.Font.GothamBold; CloseBtnMain.TextSize=13; CloseBtnMain.ZIndex=102; CloseBtnMain.AutoButtonColor=false; Instance.new("UICorner",CloseBtnMain).CornerRadius=UDim.new(0,8)
 local divTop=Instance.new("Frame",Main); divTop.Size=UDim2.new(1,0,0,1); divTop.Position=UDim2.new(0,0,0,50); divTop.BackgroundColor3=Color3.fromRGB(45,15,90); divTop.BorderSizePixel=0; divTop.ZIndex=101
+
+-- ============================================================
+-- SIDEBAR
+-- ============================================================
 local Sidebar=Instance.new("Frame",Main); Sidebar.Size=UDim2.new(0,130,1,-52); Sidebar.Position=UDim2.new(0,0,0,51); Sidebar.BackgroundColor3=Color3.fromRGB(11,6,20); Sidebar.BackgroundTransparency=0.15; Sidebar.BorderSizePixel=0; Sidebar.ZIndex=101
 local sideDiv=Instance.new("Frame",Main); sideDiv.Size=UDim2.new(0,1,1,-52); sideDiv.Position=UDim2.new(0,130,0,51); sideDiv.BackgroundColor3=Color3.fromRGB(45,15,90); sideDiv.BorderSizePixel=0; sideDiv.ZIndex=102
 local SideScroll=Instance.new("ScrollingFrame",Sidebar); SideScroll.Size=UDim2.new(1,0,1,0); SideScroll.BackgroundTransparency=1; SideScroll.BorderSizePixel=0; SideScroll.ScrollBarThickness=2; SideScroll.ScrollBarImageColor3=Color3.fromRGB(120,0,255); SideScroll.CanvasSize=UDim2.new(0,0,0,0); SideScroll.AutomaticCanvasSize=Enum.AutomaticSize.Y
@@ -416,20 +729,50 @@ local sLL=Instance.new("UIListLayout",SideScroll); sLL.Padding=UDim.new(0,3); sL
 
 local tabToPanelList={}
 local function MakeTabButton(labelKey,order,isDefault) local btn=Instance.new("TextButton",SideScroll); btn.Size=UDim2.new(1,-14,0,26); btn.BackgroundColor3=isDefault and Color3.fromRGB(90,0,200) or Color3.fromRGB(18,10,32); btn.Text=""; btn.AutoButtonColor=false; btn.LayoutOrder=order; btn.ZIndex=102; Instance.new("UICorner",btn).CornerRadius=UDim.new(0,8); local stroke=Instance.new("UIStroke",btn); stroke.Color=isDefault and Color3.fromRGB(160,60,255) or Color3.fromRGB(35,15,55); stroke.Thickness=1; local lb=Instance.new("TextLabel",btn); lb.Size=UDim2.new(1,-8,1,0); lb.Position=UDim2.new(0,4,0,0); lb.BackgroundTransparency=1; lb.TextColor3=isDefault and Color3.fromRGB(255,255,255) or Color3.fromRGB(180,140,210); lb.Font=Enum.Font.GothamBold; lb.TextSize=9; lb.TextXAlignment=Enum.TextXAlignment.Left; lb.ZIndex=103; registerText(lb,labelKey); return {btn=btn,lb=lb,stroke=stroke} end
+
 local ContentFrame=Instance.new("Frame",Main); ContentFrame.Size=UDim2.new(1,-140,1,-60); ContentFrame.Position=UDim2.new(0,136,0,55); ContentFrame.BackgroundTransparency=1; ContentFrame.ZIndex=100
 local function MakePanel() local p=Instance.new("ScrollingFrame",ContentFrame); p.Size=UDim2.new(1,0,1,0); p.BackgroundTransparency=1; p.BorderSizePixel=0; p.ScrollBarThickness=3; p.ScrollBarImageColor3=Color3.fromRGB(120,0,255); p.CanvasSize=UDim2.new(0,0,0,0); p.AutomaticCanvasSize=Enum.AutomaticSize.Y; p.Visible=false; p.ZIndex=100; return p end
 
-local AimPanel=MakePanel(); AimPanel.Visible=true; local CHPanel=MakePanel(); local EspPanel=MakePanel(); local AAPanel=MakePanel(); local MiscPanel=MakePanel(); local SetPanel=MakePanel(); local WorldPanel=MakePanel(); local ShortcutPanel=MakePanel(); local ExecPanel=MakePanel()
-local tabAim=MakeTabButton("aim",1,true); local tabCH=MakeTabButton("crosshair",2); local tabESP=MakeTabButton("esp",3); local tabAA=MakeTabButton("antiaim",4); local tabMisc=MakeTabButton("misc",5); local tabWorld=MakeTabButton("world",6); local tabSC=MakeTabButton("shortcuts",7); local tabExec=MakeTabButton("executor",8); local tabSet=MakeTabButton("settings",9)
-tabToPanelList={{tab=tabAim,panel=AimPanel},{tab=tabCH,panel=CHPanel},{tab=tabESP,panel=EspPanel},{tab=tabAA,panel=AAPanel},{tab=tabMisc,panel=MiscPanel},{tab=tabWorld,panel=WorldPanel},{tab=tabSC,panel=ShortcutPanel},{tab=tabExec,panel=ExecPanel},{tab=tabSet,panel=SetPanel}}
+local AimPanel=MakePanel(); AimPanel.Visible=true
+local CHPanel=MakePanel()
+local EspPanel=MakePanel()
+local AAPanel=MakePanel()
+local MiscPanel=MakePanel()
+local SetPanel=MakePanel()
+local WorldPanel=MakePanel()
+local ShortcutPanel=MakePanel()
+local ExecPanel=MakePanel()
+local HitPanel=MakePanel()
+local ConsolePanel=MakePanel()
+
+local tabAim=MakeTabButton("aim",1,true)
+local tabCH=MakeTabButton("crosshair",2)
+local tabESP=MakeTabButton("esp",3)
+local tabAA=MakeTabButton("antiaim",4)
+local tabMisc=MakeTabButton("misc",5)
+local tabWorld=MakeTabButton("world",6)
+local tabHit=MakeTabButton("hitmarker",7)
+local tabConsole=MakeTabButton("consolelog",8)
+local tabSC=MakeTabButton("shortcuts",9)
+local tabExec=MakeTabButton("executor",10)
+local tabSet=MakeTabButton("settings",11)
+
+tabToPanelList={
+    {tab=tabAim,panel=AimPanel},{tab=tabCH,panel=CHPanel},{tab=tabESP,panel=EspPanel},
+    {tab=tabAA,panel=AAPanel},{tab=tabMisc,panel=MiscPanel},{tab=tabWorld,panel=WorldPanel},
+    {tab=tabHit,panel=HitPanel},{tab=tabConsole,panel=ConsolePanel},
+    {tab=tabSC,panel=ShortcutPanel},{tab=tabExec,panel=ExecPanel},{tab=tabSet,panel=SetPanel}
+}
 
 local function addGrid(p) local grid=Instance.new("UIGridLayout",p); grid.CellSize=UDim2.new(0.5,-6,0,44); grid.CellPadding=UDim2.new(0,6,0,6); grid.SortOrder=Enum.SortOrder.LayoutOrder; grid.FillDirectionMaxCells=2; local pad=Instance.new("UIPadding",p); pad.PaddingTop=UDim.new(0,6); pad.PaddingBottom=UDim.new(0,6); pad.PaddingLeft=UDim.new(0,6); pad.PaddingRight=UDim.new(0,6) end
-addGrid(AimPanel); addGrid(CHPanel); addGrid(EspPanel); addGrid(AAPanel); addGrid(MiscPanel); addGrid(SetPanel); addGrid(WorldPanel); addGrid(ShortcutPanel)
+addGrid(AimPanel); addGrid(CHPanel); addGrid(EspPanel); addGrid(AAPanel); addGrid(MiscPanel); addGrid(SetPanel); addGrid(WorldPanel); addGrid(ShortcutPanel); addGrid(HitPanel); addGrid(ConsolePanel)
+
 local function switchTab(activeTab) for _,entry in ipairs(tabToPanelList) do local isA=(entry.tab==activeTab); entry.panel.Visible=isA; entry.tab.btn.BackgroundColor3=isA and Color3.fromRGB(90,0,200) or Settings.Settings.GuiBtnColor; entry.tab.stroke.Color=isA and Color3.fromRGB(160,60,255) or Settings.Settings.GuiBorderColor; entry.tab.lb.TextColor3=isA and Color3.fromRGB(255,255,255) or Settings.Settings.GuiTextColor end end
 for _,entry in ipairs(tabToPanelList) do entry.tab.btn.MouseButton1Click:Connect(function() switchTab(entry.tab) end) end
 
 ToggleBtn.MouseButton1Click:Connect(function() if Main.Visible then TweenService:Create(Main,TweenInfo.new(0.2,Enum.EasingStyle.Quad,Enum.EasingDirection.In),{Size=UDim2.new(0,MENU_W,0,0),Position=UDim2.new(0.5,-MENU_W/2,0.5,0)}):Play(); task.delay(0.22,function() Main.Visible=false end) else Main.Visible=true; Main.Size=UDim2.new(0,MENU_W,0,0); Main.Position=UDim2.new(0.5,-MENU_W/2,0.5,0); TweenService:Create(Main,TweenInfo.new(0.28,Enum.EasingStyle.Back,Enum.EasingDirection.Out),{Size=UDim2.new(0,MENU_W,0,MENU_H),Position=UDim2.new(0.5,-MENU_W/2,0.5,-MENU_H/2)}):Play() end end)
 CloseBtnMain.MouseButton1Click:Connect(function() TweenService:Create(Main,TweenInfo.new(0.2,Enum.EasingStyle.Quad,Enum.EasingDirection.In),{Size=UDim2.new(0,MENU_W,0,0),Position=UDim2.new(0.5,-MENU_W/2,0.5,0)}):Play(); task.delay(0.22,function() Main.Visible=false end) end)
+
 local dragging,dragInput,dragStart,startPos
 TopBar.InputBegan:Connect(function(inp) if inp.UserInputType==Enum.UserInputType.MouseButton1 or inp.UserInputType==Enum.UserInputType.Touch then dragging=true; dragStart=inp.Position; startPos=Main.Position; inp.Changed:Connect(function() if inp.UserInputState==Enum.UserInputState.End then dragging=false end end) end end)
 TopBar.InputChanged:Connect(function(inp) if inp.UserInputType==Enum.UserInputType.MouseMovement or inp.UserInputType==Enum.UserInputType.Touch then dragInput=inp end end)
@@ -437,7 +780,9 @@ UserInputService.InputChanged:Connect(function(inp) if inp==dragInput and draggi
 
 local function applyTheme() local ac=Settings.Settings.GuiAccentColor; local bg=Settings.Settings.GuiBgColor; local borC=Settings.Settings.GuiBorderColor; Main.BackgroundColor3=bg; Sidebar.BackgroundColor3=bg; accentLine.BackgroundColor3=ac; mStr.Color=borC; logoBg.BackgroundColor3=ac; VerLbl.BackgroundColor3=Settings.Settings.GuiGlowColor; divTop.BackgroundColor3=borC; sideDiv.BackgroundColor3=borC; ToggleBtn.TextColor3=ac; tStr.Color=Settings.Settings.GuiGlowColor; CloseBtnMain.TextColor3=ac; TitleLbl.TextColor3=Settings.Settings.GuiTextColor; wmStroke.Color=ac; wmAccent.BackgroundColor3=ac; local t=Settings.Settings.Theme; if t=="Original" then mainCorner.CornerRadius=UDim.new(0,14); logoTxt.Text="F"; TitleLbl.Text="FLEEXI"; TitleLbl.Font=Enum.Font.GothamBold elseif t=="HvH" then mainCorner.CornerRadius=UDim.new(0,2); logoTxt.Text="H"; TitleLbl.Text="FLEEXI"; TitleLbl.Font=Enum.Font.GothamBold elseif t=="ModMenu" then mainCorner.CornerRadius=UDim.new(0,18); logoTxt.Text="M"; TitleLbl.Text="MOD MENU"; TitleLbl.Font=Enum.Font.GothamBlack elseif t=="Nostalgia" then mainCorner.CornerRadius=UDim.new(0,0); logoTxt.Text="N"; TitleLbl.Text="FLEEXI"; TitleLbl.Font=Enum.Font.Arcade end; for _,entry in ipairs(tabToPanelList) do if entry.panel.Visible then switchTab(entry.tab); break end end end
 
+-- ============================================================
 -- UI BUILDERS
+-- ============================================================
 local function MakeToggle(parent,labelKey,default,callback,order) local row=Instance.new("TextButton",parent); row.BackgroundColor3=default and Color3.fromRGB(22,10,38) or Settings.Settings.GuiBtnColor; row.BackgroundTransparency=0.1; row.Text=""; row.AutoButtonColor=false; row.LayoutOrder=order or 0; row.ZIndex=101; Instance.new("UICorner",row).CornerRadius=UDim.new(0,9); local rs=Instance.new("UIStroke",row); rs.Color=default and Color3.fromRGB(80,0,160) or Settings.Settings.GuiBorderColor; rs.Thickness=1; local tl=Instance.new("TextLabel",row); tl.Size=UDim2.new(1,-50,1,0); tl.Position=UDim2.new(0,10,0,0); tl.BackgroundTransparency=1; tl.TextColor3=Settings.Settings.GuiTextColor; tl.Font=Enum.Font.GothamMedium; tl.TextSize=11; tl.TextXAlignment=Enum.TextXAlignment.Left; tl.ZIndex=102; registerText(tl,labelKey); local track=Instance.new("Frame",row); track.Size=UDim2.new(0,32,0,18); track.Position=UDim2.new(1,-38,0.5,-9); track.BackgroundColor3=default and Color3.fromRGB(90,0,200) or Color3.fromRGB(30,15,50); track.ZIndex=102; Instance.new("UICorner",track).CornerRadius=UDim.new(1,0); local knob=Instance.new("Frame",track); knob.Size=UDim2.new(0,13,0,13); knob.Position=default and UDim2.new(1,-15,0.5,-6) or UDim2.new(0,2,0.5,-6); knob.BackgroundColor3=Color3.fromRGB(240,220,255); knob.ZIndex=103; Instance.new("UICorner",knob).CornerRadius=UDim.new(1,0); local state=default; local twi=TweenInfo.new(0.18,Enum.EasingStyle.Quad); row.MouseButton1Click:Connect(function() state=not state; TweenService:Create(track,twi,{BackgroundColor3=state and Color3.fromRGB(90,0,200) or Color3.fromRGB(30,15,50)}):Play(); TweenService:Create(knob,twi,{Position=state and UDim2.new(1,-15,0.5,-6) or UDim2.new(0,2,0.5,-6)}):Play(); rs.Color=state and Color3.fromRGB(80,0,160) or Settings.Settings.GuiBorderColor; callback(state) end) end
 local function MakeSlider(parent,labelKey,mn,mx,def,suf,callback,order) local frame=Instance.new("Frame",parent); frame.BackgroundColor3=Settings.Settings.GuiBtnColor; frame.BackgroundTransparency=0.1; frame.BorderSizePixel=0; frame.LayoutOrder=order or 0; frame.ZIndex=101; Instance.new("UICorner",frame).CornerRadius=UDim.new(0,9); Instance.new("UIStroke",frame).Color=Settings.Settings.GuiBorderColor; local lbl=Instance.new("TextLabel",frame); lbl.Size=UDim2.new(1,-60,0,16); lbl.Position=UDim2.new(0,8,0,4); lbl.BackgroundTransparency=1; lbl.TextColor3=Settings.Settings.GuiTextColor; lbl.Font=Enum.Font.GothamMedium; lbl.TextSize=10; lbl.TextXAlignment=Enum.TextXAlignment.Left; lbl.ZIndex=102; registerText(lbl,labelKey); local vBg=Instance.new("Frame",frame); vBg.Size=UDim2.new(0,42,0,14); vBg.Position=UDim2.new(1,-48,0,5); vBg.BackgroundColor3=Color3.fromRGB(65,0,140); vBg.ZIndex=102; Instance.new("UICorner",vBg).CornerRadius=UDim.new(0,4); local vLbl=Instance.new("TextLabel",vBg); vLbl.Size=UDim2.new(1,0,1,0); vLbl.BackgroundTransparency=1; vLbl.Text=tostring(def)..(suf or ""); vLbl.TextColor3=Color3.fromRGB(220,170,255); vLbl.Font=Enum.Font.GothamBold; vLbl.TextSize=9; vLbl.ZIndex=103; local trBg=Instance.new("Frame",frame); trBg.Size=UDim2.new(1,-14,0,5); trBg.Position=UDim2.new(0,7,1,-12); trBg.BackgroundColor3=Color3.fromRGB(32,16,52); trBg.ZIndex=102; Instance.new("UICorner",trBg).CornerRadius=UDim.new(1,0); local fill=Instance.new("Frame",trBg); fill.Size=UDim2.new(math.clamp((def-mn)/(mx-mn),0,1),0,1,0); fill.BackgroundColor3=Color3.fromRGB(110,0,240); fill.ZIndex=103; Instance.new("UICorner",fill).CornerRadius=UDim.new(1,0); local handle=Instance.new("Frame",trBg); handle.Size=UDim2.new(0,11,0,11); handle.Position=UDim2.new(math.clamp((def-mn)/(mx-mn),0,1),-5,0.5,-5); handle.BackgroundColor3=Color3.fromRGB(220,160,255); handle.ZIndex=104; Instance.new("UICorner",handle).CornerRadius=UDim.new(1,0); local sliderBtn=Instance.new("TextButton",frame); sliderBtn.Size=UDim2.new(1,-14,0,20); sliderBtn.Position=UDim2.new(0,7,1,-20); sliderBtn.BackgroundTransparency=1; sliderBtn.Text=""; sliderBtn.ZIndex=105; local isDrg=false; local function update(pos) local rel=math.clamp(pos.X-trBg.AbsolutePosition.X,0,trBg.AbsoluteSize.X); local pct=rel/trBg.AbsoluteSize.X; fill.Size=UDim2.new(pct,0,1,0); handle.Position=UDim2.new(pct,-5,0.5,-5); local val=math.floor(mn+(mx-mn)*pct); vLbl.Text=tostring(val)..(suf or ""); callback(val) end; sliderBtn.InputBegan:Connect(function(inp) if inp.UserInputType==Enum.UserInputType.MouseButton1 or inp.UserInputType==Enum.UserInputType.Touch then isDrg=true; update(inp.Position) end end); UserInputService.InputChanged:Connect(function(inp) if isDrg and (inp.UserInputType==Enum.UserInputType.MouseMovement or inp.UserInputType==Enum.UserInputType.Touch) then update(inp.Position) end end); UserInputService.InputEnded:Connect(function(inp) if inp.UserInputType==Enum.UserInputType.MouseButton1 or inp.UserInputType==Enum.UserInputType.Touch then isDrg=false end end) end
 local function MakeDropdown(parent,labelKey,options,defaultIdx,callback,order) local frame=Instance.new("Frame",parent); frame.BackgroundColor3=Settings.Settings.GuiBtnColor; frame.BackgroundTransparency=0.1; frame.BorderSizePixel=0; frame.LayoutOrder=order or 0; frame.ZIndex=101; Instance.new("UICorner",frame).CornerRadius=UDim.new(0,9); Instance.new("UIStroke",frame).Color=Settings.Settings.GuiBorderColor; local lbl=Instance.new("TextLabel",frame); lbl.Size=UDim2.new(0,70,1,0); lbl.Position=UDim2.new(0,10,0,0); lbl.BackgroundTransparency=1; lbl.TextColor3=Settings.Settings.GuiTextColor; lbl.Font=Enum.Font.GothamMedium; lbl.TextSize=10; lbl.TextXAlignment=Enum.TextXAlignment.Left; lbl.ZIndex=102; registerText(lbl,labelKey); local currentIdx=defaultIdx; local btn=Instance.new("TextButton",frame); btn.Size=UDim2.new(0,100,0,24); btn.Position=UDim2.new(1,-105,0.5,-12); btn.BackgroundColor3=Color3.fromRGB(65,0,140); btn.Text=""; btn.AutoButtonColor=false; btn.ZIndex=103; Instance.new("UICorner",btn).CornerRadius=UDim.new(0,6); local btnText=Instance.new("TextLabel",btn); btnText.Size=UDim2.new(1,-8,1,0); btnText.Position=UDim2.new(0,4,0,0); btnText.BackgroundTransparency=1; btnText.TextColor3=Color3.fromRGB(240,210,255); btnText.Font=Enum.Font.GothamBold; btnText.TextSize=10; btnText.TextXAlignment=Enum.TextXAlignment.Left; btnText.ZIndex=104; registerText(btnText,options[currentIdx].key); btn.MouseButton1Click:Connect(function() currentIdx=currentIdx+1; if currentIdx>#options then currentIdx=1 end; translatables[btnText]={key=options[currentIdx].key,prefix=""}; btnText.Text=T(options[currentIdx].key); callback(options[currentIdx].value) end) end
@@ -462,11 +807,17 @@ local function closePicker() PickerOverlay.Visible=false; activePicker=nil end; 
 local function openPicker(setter,initial) activePicker={setter=setter}; rVal=math.floor(initial.R*255); gVal=math.floor(initial.G*255); bVal=math.floor(initial.B*255); setR(rVal); setG(gVal); setB(bVal); PickerOverlay.Visible=true end
 local function MakeColorBtn(parent,labelKey,initial,callback,order) local frame=Instance.new("Frame",parent); frame.BackgroundColor3=Settings.Settings.GuiBtnColor; frame.BackgroundTransparency=0.1; frame.BorderSizePixel=0; frame.LayoutOrder=order or 0; frame.ZIndex=101; Instance.new("UICorner",frame).CornerRadius=UDim.new(0,9); Instance.new("UIStroke",frame).Color=Settings.Settings.GuiBorderColor; local lbl=Instance.new("TextLabel",frame); lbl.Size=UDim2.new(1,-56,1,0); lbl.Position=UDim2.new(0,10,0,0); lbl.BackgroundTransparency=1; lbl.TextColor3=Settings.Settings.GuiTextColor; lbl.Font=Enum.Font.GothamMedium; lbl.TextSize=10; lbl.TextXAlignment=Enum.TextXAlignment.Left; lbl.ZIndex=102; registerText(lbl,labelKey); local cbtn=Instance.new("TextButton",frame); cbtn.Size=UDim2.new(0,36,0,20); cbtn.Position=UDim2.new(1,-42,0.5,-10); cbtn.BackgroundColor3=initial; cbtn.Text=""; cbtn.AutoButtonColor=false; cbtn.ZIndex=103; Instance.new("UICorner",cbtn).CornerRadius=UDim.new(0,5); Instance.new("UIStroke",cbtn).Color=Color3.fromRGB(180,100,220); cbtn.MouseButton1Click:Connect(function() openPicker(function(col) cbtn.BackgroundColor3=col; callback(col) end,cbtn.BackgroundColor3) end) end
 
--- Forward declare handsResetAll
+-- ============================================================
+-- Forward declares
+-- ============================================================
 local handsResetAll
+local resetWorldPartColors
 
--- ===== ALL PANELS =====
--- AIM
+-- ============================================================
+-- ALL PANELS
+-- ============================================================
+
+-- AIM PANEL
 MakeToggle(AimPanel,"aimbot_on",false,function(v) Settings.Aimbot.Enabled=v; updateAimBtnVis(); updateAimModeBtnVis() end,1)
 MakeToggle(AimPanel,"wall_check",false,function(v) Settings.Aimbot.WallCheck=v end,2)
 MakeToggle(AimPanel,"fov_circle",true,function(v) Settings.Aimbot.ShowFOV=v end,3)
@@ -478,7 +829,8 @@ MakeSlider(AimPanel,"smooth",1,100,25,"%",function(v) Settings.Aimbot.Smooth=1-(
 MakeSlider(AimPanel,"fov_size",30,400,120,"px",function(v) Settings.Aimbot.FOV=v end,9)
 MakeColorBtn(AimPanel,"fov_color",Settings.Aimbot.FovColor,function(c) Settings.Aimbot.FovColor=c end,10)
 MakeColorBtn(AimPanel,"fov_fill_color",Settings.Aimbot.FovFillColor,function(c) Settings.Aimbot.FovFillColor=c end,11)
--- CH
+
+-- CROSSHAIR PANEL
 MakeToggle(CHPanel,"ch_on",false,function(v) Settings.Crosshair.Enabled=v end,1)
 MakeToggle(CHPanel,"ch_dot",false,function(v) Settings.Crosshair.Dot=v end,2)
 MakeToggle(CHPanel,"ch_outline",true,function(v) Settings.Crosshair.Outline=v end,3)
@@ -490,15 +842,63 @@ MakeSlider(CHPanel,"ch_ox",-200,200,0,"",function(v) Settings.Crosshair.OffsetX=
 MakeSlider(CHPanel,"ch_oy",-200,200,0,"",function(v) Settings.Crosshair.OffsetY=v end,9)
 MakeSlider(CHPanel,"ch_dot_size",1,20,4,"px",function(v) Settings.Crosshair.DotSize=v end,10)
 MakeColorBtn(CHPanel,"ch_color",Settings.Crosshair.Color,function(c) Settings.Crosshair.Color=c end,11)
--- ESP
-MakeToggle(EspPanel,"esp_on",true,function(v) Settings.ESP.Enabled=v end,1); MakeToggle(EspPanel,"boxes",true,function(v) Settings.ESP.Boxes=v end,2); MakeToggle(EspPanel,"filled_box",false,function(v) Settings.ESP.FilledBox=v end,3); MakeToggle(EspPanel,"box_outline",true,function(v) Settings.ESP.BoxOutline=v end,4); MakeToggle(EspPanel,"names",true,function(v) Settings.ESP.Names=v end,5); MakeToggle(EspPanel,"health",true,function(v) Settings.ESP.Health=v end,6); MakeToggle(EspPanel,"distance",true,function(v) Settings.ESP.Distance=v end,7); MakeToggle(EspPanel,"tracers",true,function(v) Settings.ESP.Tracers=v end,8); MakeToggle(EspPanel,"skeleton",true,function(v) Settings.ESP.Skeleton=v end,9); MakeToggle(EspPanel,"chams",true,function(v) Settings.ESP.Chams=v end,10); MakeToggle(EspPanel,"show_tool",true,function(v) Settings.ESP.ShowTool=v end,11); MakeToggle(EspPanel,"team_check",false,function(v) Settings.ESP.TeamCheck=v end,12); MakeToggle(EspPanel,"armor_bar",false,function(v) Settings.ESP.ArmorBar=v end,13); MakeToggle(EspPanel,"kills",false,function(v) Settings.ESP.Kills=v end,14); MakeToggle(EspPanel,"deaths",false,function(v) Settings.ESP.Deaths=v end,15); MakeToggle(EspPanel,"score_show",false,function(v) Settings.ESP.Score=v end,16); MakeToggle(EspPanel,"offscreen_arrows",false,function(v) Settings.ESP.OffScreenArrows=v end,17); MakeToggle(EspPanel,"aura_glow",false,function(v) Settings.ESP.AuraGlow=v end,18); MakeToggle(EspPanel,"jump_ring",false,function(v) Settings.ESP.JumpRing=v end,19); MakeToggle(EspPanel,"move_trail",false,function(v) Settings.ESP.MovementTrail=v end,20)
-MakeSlider(EspPanel,"max_dist",100,5000,2000,"m",function(v) Settings.ESP.MaxDistance=v end,21); MakeSlider(EspPanel,"esp_text_scale",8,24,12,"px",function(v) Settings.ESP.ESPTextScale=v end,22); MakeSlider(EspPanel,"box_rounding",0,20,0,"px",function(v) Settings.ESP.BoxRounding=v end,23); MakeSlider(EspPanel,"skel_thick",1,5,2,"px",function(v) Settings.ESP.SkeletonThickness=v end,24); MakeSlider(EspPanel,"tracer_thick",1,5,2,"px",function(v) Settings.ESP.TracerThickness=v end,25); MakeSlider(EspPanel,"fill_fade",0,100,70,"%",function(v) Settings.ESP.FillFade=v/100 end,26); MakeSlider(EspPanel,"ring_fade",0,100,80,"%",function(v) Settings.ESP.RingFade=v/100 end,27); MakeSlider(EspPanel,"trail_fade",0,100,90,"%",function(v) Settings.ESP.TrailFade=v/100 end,28)
-MakeDropdown(EspPanel,"tracer_start",{{key="pos_bottom",value="Bottom"},{key="pos_center",value="Center"},{key="pos_top",value="Top"}},1,function(v) Settings.ESP.TracerStart=v end,29); MakeDropdown(EspPanel,"tracer_end",{{key="pos_bottom",value="Bottom"},{key="pos_center",value="Center"},{key="pos_top",value="Top"}},1,function(v) Settings.ESP.TracerEnd=v end,30)
-MakeColorBtn(EspPanel,"box_color",Settings.ESP.BoxColor,function(c) Settings.ESP.BoxColor=c end,31); MakeColorBtn(EspPanel,"fill_color",Settings.ESP.FillColor,function(c) Settings.ESP.FillColor=c end,32); MakeColorBtn(EspPanel,"name_color",Settings.ESP.NameColor,function(c) Settings.ESP.NameColor=c end,33); MakeColorBtn(EspPanel,"health_color",Settings.ESP.HealthColor,function(c) Settings.ESP.HealthColor=c end,34); MakeColorBtn(EspPanel,"dist_color",Settings.ESP.DistanceColor,function(c) Settings.ESP.DistanceColor=c end,35); MakeColorBtn(EspPanel,"tracer_color",Settings.ESP.TracerColor,function(c) Settings.ESP.TracerColor=c end,36); MakeColorBtn(EspPanel,"skel_color",Settings.ESP.SkeletonColor,function(c) Settings.ESP.SkeletonColor=c end,37); MakeColorBtn(EspPanel,"chams_color",Settings.ESP.ChamsColor,function(c) Settings.ESP.ChamsColor=c end,38); MakeColorBtn(EspPanel,"armor_color",Settings.ESP.ArmorColor,function(c) Settings.ESP.ArmorColor=c end,39); MakeColorBtn(EspPanel,"kills_color",Settings.ESP.KillsColor,function(c) Settings.ESP.KillsColor=c end,40); MakeColorBtn(EspPanel,"deaths_color",Settings.ESP.DeathsColor,function(c) Settings.ESP.DeathsColor=c end,41); MakeColorBtn(EspPanel,"score_color",Settings.ESP.ScoreColor,function(c) Settings.ESP.ScoreColor=c end,42); MakeColorBtn(EspPanel,"arrow_color",Settings.ESP.ArrowColor,function(c) Settings.ESP.ArrowColor=c end,43); MakeColorBtn(EspPanel,"aura_inner",Settings.ESP.AuraInner,function(c) Settings.ESP.AuraInner=c end,44); MakeColorBtn(EspPanel,"aura_outer",Settings.ESP.AuraOuter,function(c) Settings.ESP.AuraOuter=c end,45); MakeColorBtn(EspPanel,"ring_start",Settings.ESP.RingStart,function(c) Settings.ESP.RingStart=c end,46); MakeColorBtn(EspPanel,"trail_start",Settings.ESP.TrailStart,function(c) Settings.ESP.TrailStart=c end,47)
--- AA
-MakeToggle(AAPanel,"aa_on",false,function(v) Settings.AntiAim.Enabled=v end,1); MakeDropdown(AAPanel,"aa_mode",{{key="mode_spin",value="Spin"},{key="mode_back",value="Backward"},{key="mode_random",value="Random"},{key="mode_jitter",value="Jitter"}},1,function(v) Settings.AntiAim.Mode=v end,2); MakeSlider(AAPanel,"aa_yaw",1,100,20,"",function(v) Settings.AntiAim.YawSpeed=v end,3); MakeSlider(AAPanel,"aa_pitch",-89,89,0,"",function(v) Settings.AntiAim.Pitch=v end,4)
 
--- MISC
+-- ESP PANEL
+MakeToggle(EspPanel,"esp_on",true,function(v) Settings.ESP.Enabled=v end,1)
+MakeToggle(EspPanel,"boxes",true,function(v) Settings.ESP.Boxes=v end,2)
+MakeToggle(EspPanel,"filled_box",false,function(v) Settings.ESP.FilledBox=v end,3)
+MakeToggle(EspPanel,"box_outline",true,function(v) Settings.ESP.BoxOutline=v end,4)
+MakeToggle(EspPanel,"names",true,function(v) Settings.ESP.Names=v end,5)
+MakeToggle(EspPanel,"health",true,function(v) Settings.ESP.Health=v end,6)
+MakeToggle(EspPanel,"distance",true,function(v) Settings.ESP.Distance=v end,7)
+MakeToggle(EspPanel,"tracers",true,function(v) Settings.ESP.Tracers=v end,8)
+MakeToggle(EspPanel,"skeleton",true,function(v) Settings.ESP.Skeleton=v end,9)
+MakeToggle(EspPanel,"chams",true,function(v) Settings.ESP.Chams=v end,10)
+MakeToggle(EspPanel,"show_tool",true,function(v) Settings.ESP.ShowTool=v end,11)
+MakeToggle(EspPanel,"team_check",false,function(v) Settings.ESP.TeamCheck=v end,12)
+MakeToggle(EspPanel,"armor_bar",false,function(v) Settings.ESP.ArmorBar=v end,13)
+MakeToggle(EspPanel,"kills",false,function(v) Settings.ESP.Kills=v end,14)
+MakeToggle(EspPanel,"deaths",false,function(v) Settings.ESP.Deaths=v end,15)
+MakeToggle(EspPanel,"score_show",false,function(v) Settings.ESP.Score=v end,16)
+MakeToggle(EspPanel,"offscreen_arrows",false,function(v) Settings.ESP.OffScreenArrows=v end,17)
+MakeToggle(EspPanel,"aura_glow",false,function(v) Settings.ESP.AuraGlow=v end,18)
+MakeToggle(EspPanel,"jump_ring",false,function(v) Settings.ESP.JumpRing=v end,19)
+MakeToggle(EspPanel,"move_trail",false,function(v) Settings.ESP.MovementTrail=v end,20)
+MakeSlider(EspPanel,"max_dist",100,5000,2000,"m",function(v) Settings.ESP.MaxDistance=v end,21)
+MakeSlider(EspPanel,"esp_text_scale",8,24,12,"px",function(v) Settings.ESP.ESPTextScale=v end,22)
+MakeSlider(EspPanel,"box_rounding",0,20,0,"px",function(v) Settings.ESP.BoxRounding=v end,23)
+MakeSlider(EspPanel,"skel_thick",1,5,2,"px",function(v) Settings.ESP.SkeletonThickness=v end,24)
+MakeSlider(EspPanel,"tracer_thick",1,5,2,"px",function(v) Settings.ESP.TracerThickness=v end,25)
+MakeSlider(EspPanel,"fill_fade",0,100,70,"%",function(v) Settings.ESP.FillFade=v/100 end,26)
+MakeSlider(EspPanel,"ring_fade",0,100,80,"%",function(v) Settings.ESP.RingFade=v/100 end,27)
+MakeSlider(EspPanel,"trail_fade",0,100,90,"%",function(v) Settings.ESP.TrailFade=v/100 end,28)
+MakeDropdown(EspPanel,"tracer_start",{{key="pos_bottom",value="Bottom"},{key="pos_center",value="Center"},{key="pos_top",value="Top"}},1,function(v) Settings.ESP.TracerStart=v end,29)
+MakeDropdown(EspPanel,"tracer_end",{{key="pos_bottom",value="Bottom"},{key="pos_center",value="Center"},{key="pos_top",value="Top"}},1,function(v) Settings.ESP.TracerEnd=v end,30)
+MakeColorBtn(EspPanel,"box_color",Settings.ESP.BoxColor,function(c) Settings.ESP.BoxColor=c end,31)
+MakeColorBtn(EspPanel,"fill_color",Settings.ESP.FillColor,function(c) Settings.ESP.FillColor=c end,32)
+MakeColorBtn(EspPanel,"name_color",Settings.ESP.NameColor,function(c) Settings.ESP.NameColor=c end,33)
+MakeColorBtn(EspPanel,"health_color",Settings.ESP.HealthColor,function(c) Settings.ESP.HealthColor=c end,34)
+MakeColorBtn(EspPanel,"dist_color",Settings.ESP.DistanceColor,function(c) Settings.ESP.DistanceColor=c end,35)
+MakeColorBtn(EspPanel,"tracer_color",Settings.ESP.TracerColor,function(c) Settings.ESP.TracerColor=c end,36)
+MakeColorBtn(EspPanel,"skel_color",Settings.ESP.SkeletonColor,function(c) Settings.ESP.SkeletonColor=c end,37)
+MakeColorBtn(EspPanel,"chams_color",Settings.ESP.ChamsColor,function(c) Settings.ESP.ChamsColor=c end,38)
+MakeColorBtn(EspPanel,"armor_color",Settings.ESP.ArmorColor,function(c) Settings.ESP.ArmorColor=c end,39)
+MakeColorBtn(EspPanel,"kills_color",Settings.ESP.KillsColor,function(c) Settings.ESP.KillsColor=c end,40)
+MakeColorBtn(EspPanel,"deaths_color",Settings.ESP.DeathsColor,function(c) Settings.ESP.DeathsColor=c end,41)
+MakeColorBtn(EspPanel,"score_color",Settings.ESP.ScoreColor,function(c) Settings.ESP.ScoreColor=c end,42)
+MakeColorBtn(EspPanel,"arrow_color",Settings.ESP.ArrowColor,function(c) Settings.ESP.ArrowColor=c end,43)
+MakeColorBtn(EspPanel,"aura_inner",Settings.ESP.AuraInner,function(c) Settings.ESP.AuraInner=c end,44)
+MakeColorBtn(EspPanel,"aura_outer",Settings.ESP.AuraOuter,function(c) Settings.ESP.AuraOuter=c end,45)
+MakeColorBtn(EspPanel,"ring_start",Settings.ESP.RingStart,function(c) Settings.ESP.RingStart=c end,46)
+MakeColorBtn(EspPanel,"trail_start",Settings.ESP.TrailStart,function(c) Settings.ESP.TrailStart=c end,47)
+
+-- AA PANEL
+MakeToggle(AAPanel,"aa_on",false,function(v) Settings.AntiAim.Enabled=v end,1)
+MakeDropdown(AAPanel,"aa_mode",{{key="mode_spin",value="Spin"},{key="mode_back",value="Backward"},{key="mode_random",value="Random"},{key="mode_jitter",value="Jitter"}},1,function(v) Settings.AntiAim.Mode=v end,2)
+MakeSlider(AAPanel,"aa_yaw",1,100,20,"",function(v) Settings.AntiAim.YawSpeed=v end,3)
+MakeSlider(AAPanel,"aa_pitch",-89,89,0,"",function(v) Settings.AntiAim.Pitch=v end,4)
+
+-- MISC PANEL (Hands Fixed)
 MakeToggle(MiscPanel,"misc_fov_on",false,function(v) Settings.Misc.FOVEnabled=v end,1)
 MakeSlider(MiscPanel,"misc_fov",30,120,70,"",function(v) Settings.Misc.FOV=v end,2)
 MakeToggle(MiscPanel,"force_tp",false,function(v) Settings.Misc.ForceThirdPerson=v end,3)
@@ -508,11 +908,30 @@ MakeToggle(MiscPanel,"hands_on",false,function(v) Settings.Misc.HandsEnabled=v; 
 MakeSlider(MiscPanel,"hands_x",-50,50,0,"",function(v) Settings.Misc.HandsX=v end,7)
 MakeSlider(MiscPanel,"hands_y",-50,50,0,"",function(v) Settings.Misc.HandsY=v end,8)
 MakeSlider(MiscPanel,"hands_z",-50,50,0,"",function(v) Settings.Misc.HandsZ=v end,9)
+MakeSlider(MiscPanel,"hands_rx",-180,180,0,"°",function(v) Settings.Misc.HandsRotX=v end,10)
+MakeSlider(MiscPanel,"hands_ry",-180,180,0,"°",function(v) Settings.Misc.HandsRotY=v end,11)
+MakeSlider(MiscPanel,"hands_rz",-180,180,0,"°",function(v) Settings.Misc.HandsRotZ=v end,12)
 
--- Forward declare resetWorldPartColors
-local resetWorldPartColors
+-- HIT MARKER PANEL (NEW)
+MakeToggle(HitPanel,"hit_sound",false,function(v) Settings.HitMarker.HitSoundEnabled=v end,1)
+MakeSlider(HitPanel,"hit_sound_vol",0,100,100,"%",function(v) Settings.HitMarker.HitSoundVolume=v/100 end,2)
+MakeToggle(HitPanel,"hit_effect",false,function(v) Settings.HitMarker.HitEffectEnabled=v end,3)
+MakeSlider(HitPanel,"hit_effect_dur",1,20,3,"",function(v) Settings.HitMarker.HitEffectDuration=v/10 end,4)
+MakeToggle(HitPanel,"death_sound",false,function(v) Settings.HitMarker.DeathSoundEnabled=v end,5)
+MakeSlider(HitPanel,"death_sound_vol",0,100,100,"%",function(v) Settings.HitMarker.DeathSoundVolume=v/100 end,6)
+MakeToggle(HitPanel,"miss_log",false,function(v) Settings.HitMarker.MissLogEnabled=v end,7)
+MakeColorBtn(HitPanel,"hit_effect_color",Settings.HitMarker.HitEffectColor,function(c) Settings.HitMarker.HitEffectColor=c end,8)
+MakeColorBtn(HitPanel,"miss_log_color",Settings.HitMarker.MissLogColor,function(c) Settings.HitMarker.MissLogColor=c end,9)
 
--- WORLD
+-- CONSOLE LOG PANEL (NEW)
+MakeToggle(ConsolePanel,"console_on",false,function(v) Settings.ConsoleLog.Enabled=v; ConsoleLogFrame.Visible=v end,1)
+MakeToggle(ConsolePanel,"log_hits",true,function(v) Settings.ConsoleLog.LogHits=v end,2)
+MakeToggle(ConsolePanel,"log_misses",true,function(v) Settings.ConsoleLog.LogMisses=v end,3)
+MakeToggle(ConsolePanel,"log_deaths",true,function(v) Settings.ConsoleLog.LogDeaths=v end,4)
+MakeToggle(ConsolePanel,"log_damage",true,function(v) Settings.ConsoleLog.LogDamage=v end,5)
+MakeSlider(ConsolePanel,"max_lines",10,200,50,"",function(v) Settings.ConsoleLog.MaxLines=v end,6)
+
+-- WORLD PANEL
 MakeToggle(WorldPanel,"world_ambient_on",false,function(v) Settings.World.AmbientEnabled=v; if not v then pcall(function() Lighting.Ambient=defaultAmbient; Lighting.OutdoorAmbient=defaultOutdoorAmbient end) end end,1)
 MakeToggle(WorldPanel,"world_sky_on",false,function(v)
     Settings.World.SkyEnabled=v
@@ -544,7 +963,7 @@ MakeButton(WorldPanel,"world_reset",function()
     if resetWorldPartColors then resetWorldPartColors() end
 end,8)
 
--- SHORTCUTS
+-- SHORTCUTS PANEL
 MakeToggle(ShortcutPanel,"sc_aim_btn",false,function(v) Settings.Shortcuts.AimBtn=v; scAimBtn.Visible=v end,1)
 MakeToggle(ShortcutPanel,"sc_esp_btn",false,function(v) Settings.Shortcuts.EspBtn=v; scEspBtn.Visible=v end,2)
 MakeToggle(ShortcutPanel,"sc_bhop_btn",false,function(v) Settings.Shortcuts.BhopBtn=v; scBhopBtn.Visible=v end,3)
@@ -562,16 +981,24 @@ MakeSlider(ShortcutPanel,"sc_toggle_size",20,120,50,"px",function(v) Settings.Sh
 MakeButton(ShortcutPanel,"sc_lock_all",function() scAimLockFn(true); scEspLockFn(true); scBhopLockFn(true); aimHoldBtnLocked=true; aimModeBtnLocked=true; Settings.Shortcuts.ToggleBtnLock=true end,15)
 MakeButton(ShortcutPanel,"sc_unlock_all",function() scAimLockFn(false); scEspLockFn(false); scBhopLockFn(false); aimHoldBtnLocked=false; aimModeBtnLocked=false; Settings.Shortcuts.ToggleBtnLock=false end,16)
 
--- SETTINGS
+-- SETTINGS PANEL
 local langRow=Instance.new("Frame",SetPanel); langRow.BackgroundColor3=Settings.Settings.GuiBtnColor; langRow.BackgroundTransparency=0.1; langRow.BorderSizePixel=0; langRow.LayoutOrder=1; langRow.ZIndex=101; Instance.new("UICorner",langRow).CornerRadius=UDim.new(0,9); Instance.new("UIStroke",langRow).Color=Settings.Settings.GuiBorderColor; local lrLbl=Instance.new("TextLabel",langRow); lrLbl.Size=UDim2.new(0,60,1,0); lrLbl.Position=UDim2.new(0,10,0,0); lrLbl.BackgroundTransparency=1; lrLbl.TextColor3=Settings.Settings.GuiTextColor; lrLbl.Font=Enum.Font.GothamMedium; lrLbl.TextSize=10; lrLbl.TextXAlignment=Enum.TextXAlignment.Left; lrLbl.ZIndex=102; registerText(lrLbl,"language"); local langCycleBtn=Instance.new("TextButton",langRow); langCycleBtn.Size=UDim2.new(0,100,0,24); langCycleBtn.Position=UDim2.new(1,-105,0.5,-12); langCycleBtn.BackgroundColor3=Color3.fromRGB(65,0,140); langCycleBtn.AutoButtonColor=false; langCycleBtn.ZIndex=103; Instance.new("UICorner",langCycleBtn).CornerRadius=UDim.new(0,6); langCycleBtn.Font=Enum.Font.GothamBold; langCycleBtn.TextSize=11; langCycleBtn.TextColor3=Color3.fromRGB(240,210,255); local langOrder={"ru","tr","en"}; local langFlags={ru="RU",tr="TR",en="EN"}; local function refreshLangBtn() langCycleBtn.Text=langFlags[Settings.Language] end; refreshLangBtn(); langCycleBtn.MouseButton1Click:Connect(function() local idx=1; for i,v in ipairs(langOrder) do if v==Settings.Language then idx=i end end; idx=idx+1; if idx>#langOrder then idx=1 end; Settings.Language=langOrder[idx]; retranslateAll(); refreshLangBtn() end)
-MakeToggle(SetPanel,"watermark",true,function(v) Settings.Settings.Watermark=v; WatermarkFrame.Visible=v end,2); MakeToggle(SetPanel,"lock_toggle",false,function(v) Settings.Misc.LockToggleBtn=v; Settings.Shortcuts.ToggleBtnLock=v end,3)
+MakeToggle(SetPanel,"watermark",true,function(v) Settings.Settings.Watermark=v; WatermarkFrame.Visible=v end,2)
+MakeToggle(SetPanel,"lock_toggle",false,function(v) Settings.Misc.LockToggleBtn=v; Settings.Shortcuts.ToggleBtnLock=v end,3)
 MakeDropdown(SetPanel,"theme",{{key="theme_orig",value="Original"},{key="theme_hvh",value="HvH"},{key="theme_mod",value="ModMenu"},{key="theme_nos",value="Nostalgia"}},1,function(v) Settings.Settings.Theme=v; applyTheme() end,4)
 MakeDropdown(SetPanel,"particle_type",{{key="part_def",value="Default"},{key="part_snow",value="Snow"},{key="part_rain",value="Rain"},{key="part_bh",value="BlackHole"},{key="part_none",value="None"}},1,function(v) Settings.Settings.ParticleType=v; clearParticles() end,5)
-MakeSlider(SetPanel,"particle_speed",1,50,10,"",function(v) Settings.Settings.ParticleSpeed=v/10 end,6); MakeSlider(SetPanel,"particle_size",1,30,10,"",function(v) Settings.Settings.ParticleSize=v/10; clearParticles() end,7); MakeSlider(SetPanel,"gui_scale",50,150,100,"%",function(v) Settings.Settings.GuiScale=v; local s=v/100; Main.Size=UDim2.new(0,MENU_W*s,0,MENU_H*s); Main.Position=UDim2.new(0.5,-MENU_W*s/2,0.5,-MENU_H*s/2) end,8)
-MakeColorBtn(SetPanel,"gui_accent",Settings.Settings.GuiAccentColor,function(c) Settings.Settings.GuiAccentColor=c; applyTheme() end,9); MakeColorBtn(SetPanel,"gui_glow",Settings.Settings.GuiGlowColor,function(c) Settings.Settings.GuiGlowColor=c; applyTheme() end,10); MakeColorBtn(SetPanel,"gui_bg",Settings.Settings.GuiBgColor,function(c) Settings.Settings.GuiBgColor=c; applyTheme() end,11); MakeColorBtn(SetPanel,"gui_btn",Settings.Settings.GuiBtnColor,function(c) Settings.Settings.GuiBtnColor=c end,12); MakeColorBtn(SetPanel,"gui_text",Settings.Settings.GuiTextColor,function(c) Settings.Settings.GuiTextColor=c end,13); MakeColorBtn(SetPanel,"gui_border",Settings.Settings.GuiBorderColor,function(c) Settings.Settings.GuiBorderColor=c; applyTheme() end,14)
+MakeSlider(SetPanel,"particle_speed",1,50,10,"",function(v) Settings.Settings.ParticleSpeed=v/10 end,6)
+MakeSlider(SetPanel,"particle_size",1,30,10,"",function(v) Settings.Settings.ParticleSize=v/10; clearParticles() end,7)
+MakeSlider(SetPanel,"gui_scale",50,150,100,"%",function(v) Settings.Settings.GuiScale=v; local s=v/100; Main.Size=UDim2.new(0,MENU_W*s,0,MENU_H*s); Main.Position=UDim2.new(0.5,-MENU_W*s/2,0.5,-MENU_H*s/2) end,8)
+MakeColorBtn(SetPanel,"gui_accent",Settings.Settings.GuiAccentColor,function(c) Settings.Settings.GuiAccentColor=c; applyTheme() end,9)
+MakeColorBtn(SetPanel,"gui_glow",Settings.Settings.GuiGlowColor,function(c) Settings.Settings.GuiGlowColor=c; applyTheme() end,10)
+MakeColorBtn(SetPanel,"gui_bg",Settings.Settings.GuiBgColor,function(c) Settings.Settings.GuiBgColor=c; applyTheme() end,11)
+MakeColorBtn(SetPanel,"gui_btn",Settings.Settings.GuiBtnColor,function(c) Settings.Settings.GuiBtnColor=c end,12)
+MakeColorBtn(SetPanel,"gui_text",Settings.Settings.GuiTextColor,function(c) Settings.Settings.GuiTextColor=c end,13)
+MakeColorBtn(SetPanel,"gui_border",Settings.Settings.GuiBorderColor,function(c) Settings.Settings.GuiBorderColor=c; applyTheme() end,14)
 applyTheme()
 
--- EXECUTOR
+-- EXECUTOR PANEL
 local execPad=Instance.new("UIPadding",ExecPanel); execPad.PaddingTop=UDim.new(0,8); execPad.PaddingLeft=UDim.new(0,8); execPad.PaddingRight=UDim.new(0,8)
 local execTitle=Instance.new("TextLabel",ExecPanel); execTitle.Size=UDim2.new(1,-16,0,24); execTitle.BackgroundTransparency=1; execTitle.Text="Lua Executor"; execTitle.TextColor3=Color3.fromRGB(220,140,255); execTitle.Font=Enum.Font.GothamBold; execTitle.TextSize=14; execTitle.ZIndex=102
 local execInput=Instance.new("TextBox",ExecPanel); execInput.Size=UDim2.new(1,-16,0,180); execInput.Position=UDim2.new(0,0,0,28); execInput.BackgroundColor3=Color3.fromRGB(12,6,22); execInput.TextColor3=Color3.fromRGB(200,180,240); execInput.PlaceholderText="-- Write Lua code here..."; execInput.PlaceholderColor3=Color3.fromRGB(80,50,120); execInput.Font=Enum.Font.Code; execInput.TextSize=12; execInput.MultiLine=true; execInput.ClearTextOnFocus=false; execInput.TextXAlignment=Enum.TextXAlignment.Left; execInput.TextYAlignment=Enum.TextYAlignment.Top; execInput.TextWrapped=true; execInput.Text=""; execInput.ZIndex=102; execInput.BorderSizePixel=0; Instance.new("UICorner",execInput).CornerRadius=UDim.new(0,8); Instance.new("UIStroke",execInput).Color=Color3.fromRGB(60,0,130); local eiPad=Instance.new("UIPadding",execInput); eiPad.PaddingTop=UDim.new(0,6); eiPad.PaddingLeft=UDim.new(0,6)
@@ -579,7 +1006,8 @@ local execOutput=Instance.new("TextLabel",ExecPanel); execOutput.Size=UDim2.new(
 local execRunBtn=Instance.new("TextButton",ExecPanel); execRunBtn.Size=UDim2.new(0.5,-10,0,30); execRunBtn.Position=UDim2.new(0,0,0,212); execRunBtn.BackgroundColor3=Color3.fromRGB(0,160,60); execRunBtn.Text="Run"; execRunBtn.TextColor3=Color3.fromRGB(255,255,255); execRunBtn.Font=Enum.Font.GothamBold; execRunBtn.TextSize=12; execRunBtn.ZIndex=102; execRunBtn.AutoButtonColor=false; Instance.new("UICorner",execRunBtn).CornerRadius=UDim.new(0,8)
 local execClearBtn=Instance.new("TextButton",ExecPanel); execClearBtn.Size=UDim2.new(0.5,-10,0,30); execClearBtn.Position=UDim2.new(0.5,2,0,212); execClearBtn.BackgroundColor3=Color3.fromRGB(160,30,30); execClearBtn.Text="Clear"; execClearBtn.TextColor3=Color3.fromRGB(255,255,255); execClearBtn.Font=Enum.Font.GothamBold; execClearBtn.TextSize=12; execClearBtn.ZIndex=102; execClearBtn.AutoButtonColor=false; Instance.new("UICorner",execClearBtn).CornerRadius=UDim.new(0,8)
 execRunBtn.MouseButton1Click:Connect(function()
-    local code=execInput.Text; if #code>6000 then execOutput.Text="Error: Max 6000 chars"; execOutput.TextColor3=Color3.fromRGB(255,80,80); return end
+    local code=execInput.Text
+    if #code>6000 then execOutput.Text="Error: Max 6000 chars"; execOutput.TextColor3=Color3.fromRGB(255,80,80); return end
     if #code==0 then execOutput.Text="Error: Empty code"; execOutput.TextColor3=Color3.fromRGB(255,80,80); return end
     local fn,err=loadstring(code)
     if not fn then execOutput.Text="Syntax Error: "..tostring(err); execOutput.TextColor3=Color3.fromRGB(255,80,80)
@@ -587,15 +1015,14 @@ execRunBtn.MouseButton1Click:Connect(function()
 end)
 execClearBtn.MouseButton1Click:Connect(function() execInput.Text=""; execOutput.Text="" end)
 
--- ===== CROSSHAIR (FIXED) =====
+-- ============================================================
+-- CROSSHAIR (FIXED)
+-- ============================================================
 local crosshairParts={}; for i=1,30 do local f=Instance.new("Frame",CrosshairContainer); f.BackgroundColor3=Color3.fromRGB(0,255,0); f.BorderSizePixel=0; f.ZIndex=55; f.Visible=false; crosshairParts[i]=f end
 local chDot=Instance.new("Frame",CrosshairContainer); chDot.BackgroundColor3=Color3.fromRGB(0,255,0); chDot.BorderSizePixel=0; chDot.AnchorPoint=Vector2.new(0.5,0.5); chDot.ZIndex=56; chDot.Visible=false; Instance.new("UICorner",chDot).CornerRadius=UDim.new(1,0)
+
 RunService.RenderStepped:Connect(function()
-    for i=1,30 do
-        crosshairParts[i].Visible=false
-        crosshairParts[i].Rotation=0
-        crosshairParts[i].AnchorPoint=Vector2.new(0,0)
-    end
+    for i=1,30 do crosshairParts[i].Visible=false; crosshairParts[i].Rotation=0; crosshairParts[i].AnchorPoint=Vector2.new(0,0) end
     chDot.Visible=false
     local ch=Settings.Crosshair
     if not ch.Enabled then return end
@@ -605,25 +1032,10 @@ RunService.RenderStepped:Connect(function()
     local sz=ch.Size; local tk=ch.Thickness; local gap=ch.Gap; local col=ch.Color
 
     local function drawLine(idx,x,y,w,h)
-        local f=crosshairParts[idx]
-        f.AnchorPoint=Vector2.new(0,0)
-        f.Size=UDim2.new(0,w,0,h)
-        f.Position=UDim2.new(0,x,0,y)
-        f.Rotation=0
-        f.BackgroundColor3=col
-        f.ZIndex=55
-        f.Visible=true
+        local f=crosshairParts[idx]; f.AnchorPoint=Vector2.new(0,0); f.Size=UDim2.new(0,w,0,h); f.Position=UDim2.new(0,x,0,y); f.Rotation=0; f.BackgroundColor3=col; f.ZIndex=55; f.Visible=true
     end
     local function drawOutline(srcIdx,dstIdx)
-        local s=crosshairParts[srcIdx]
-        local o=crosshairParts[dstIdx]
-        o.AnchorPoint=Vector2.new(0,0)
-        o.Size=UDim2.new(0,s.Size.X.Offset+2,0,s.Size.Y.Offset+2)
-        o.Position=UDim2.new(0,s.Position.X.Offset-1,0,s.Position.Y.Offset-1)
-        o.Rotation=0
-        o.BackgroundColor3=Color3.fromRGB(0,0,0)
-        o.ZIndex=54
-        o.Visible=true
+        local s=crosshairParts[srcIdx]; local o=crosshairParts[dstIdx]; o.AnchorPoint=Vector2.new(0,0); o.Size=UDim2.new(0,s.Size.X.Offset+2,0,s.Size.Y.Offset+2); o.Position=UDim2.new(0,s.Position.X.Offset-1,0,s.Position.Y.Offset-1); o.Rotation=0; o.BackgroundColor3=Color3.fromRGB(0,0,0); o.ZIndex=54; o.Visible=true
     end
 
     if ch.Style=="Cross" then
@@ -631,35 +1043,17 @@ RunService.RenderStepped:Connect(function()
         drawLine(2, cx-math.floor(tk/2), cy+gap, tk, sz)
         drawLine(3, cx-gap-sz, cy-math.floor(tk/2), sz, tk)
         drawLine(4, cx+gap, cy-math.floor(tk/2), sz, tk)
-        if ch.Outline then
-            drawOutline(1,5); drawOutline(2,6); drawOutline(3,7); drawOutline(4,8)
-        end
-
+        if ch.Outline then drawOutline(1,5); drawOutline(2,6); drawOutline(3,7); drawOutline(4,8) end
     elseif ch.Style=="Circle" then
         for i2=1,24 do
-            local a1=(i2-1)/24*math.pi*2
-            local a2=i2/24*math.pi*2
+            local a1=(i2-1)/24*math.pi*2; local a2=i2/24*math.pi*2
             local x1=cx+math.cos(a1)*sz; local y1=cy+math.sin(a1)*sz
             local x2=cx+math.cos(a2)*sz; local y2=cy+math.sin(a2)*sz
-            local dx=x2-x1; local dy=y2-y1
-            local len=math.sqrt(dx*dx+dy*dy)
-            local f=crosshairParts[i2]
-            f.AnchorPoint=Vector2.new(0.5,0.5)
-            f.Size=UDim2.new(0,math.ceil(len+1),0,tk)
-            f.Position=UDim2.new(0,(x1+x2)/2,0,(y1+y2)/2)
-            f.Rotation=math.deg(math.atan2(dy,dx))
-            f.BackgroundColor3=col
-            f.ZIndex=55
-            f.Visible=true
+            local dx=x2-x1; local dy=y2-y1; local len=math.sqrt(dx*dx+dy*dy)
+            local f=crosshairParts[i2]; f.AnchorPoint=Vector2.new(0.5,0.5); f.Size=UDim2.new(0,math.ceil(len+1),0,tk); f.Position=UDim2.new(0,(x1+x2)/2,0,(y1+y2)/2); f.Rotation=math.deg(math.atan2(dy,dx)); f.BackgroundColor3=col; f.ZIndex=55; f.Visible=true
         end
-
     elseif ch.Style=="Dot" then
-        chDot.Size=UDim2.new(0,sz,0,sz)
-        chDot.Position=UDim2.new(0,cx,0,cy)
-        chDot.BackgroundColor3=col
-        chDot.Visible=true
-        return
-
+        chDot.Size=UDim2.new(0,sz,0,sz); chDot.Position=UDim2.new(0,cx,0,cy); chDot.BackgroundColor3=col; chDot.Visible=true; return
     elseif ch.Style=="Arrows" then
         drawLine(1, cx-math.floor(tk/2), cy-gap-sz, tk, sz)
         drawLine(2, cx-math.floor(sz*0.35), cy-gap-sz, math.floor(sz*0.7), tk)
@@ -669,34 +1063,70 @@ RunService.RenderStepped:Connect(function()
         drawLine(6, cx-gap-sz, cy-math.floor(sz*0.35), tk, math.floor(sz*0.7))
         drawLine(7, cx+gap, cy-math.floor(tk/2), sz, tk)
         drawLine(8, cx+gap+sz-tk, cy-math.floor(sz*0.35), tk, math.floor(sz*0.7))
-
     elseif ch.Style=="Square" then
         drawLine(1, cx-sz, cy-sz, sz*2, tk)
         drawLine(2, cx-sz, cy+sz-tk, sz*2, tk)
         drawLine(3, cx-sz, cy-sz, tk, sz*2)
         drawLine(4, cx+sz-tk, cy-sz, tk, sz*2)
-        if ch.Outline then
-            drawOutline(1,5); drawOutline(2,6); drawOutline(3,7); drawOutline(4,8)
-        end
+        if ch.Outline then drawOutline(1,5); drawOutline(2,6); drawOutline(3,7); drawOutline(4,8) end
     end
-
     if ch.Dot and ch.Style~="Dot" then
-        chDot.Size=UDim2.new(0,ch.DotSize,0,ch.DotSize)
-        chDot.Position=UDim2.new(0,cx,0,cy)
-        chDot.BackgroundColor3=col
-        chDot.Visible=true
+        chDot.Size=UDim2.new(0,ch.DotSize,0,ch.DotSize); chDot.Position=UDim2.new(0,cx,0,cy); chDot.BackgroundColor3=col; chDot.Visible=true
     end
 end)
 
--- FOV
-local FOVFrame=Instance.new("Frame",FOVContainer); FOVFrame.BackgroundTransparency=1; FOVFrame.Size=UDim2.new(1,0,1,0); FOVFrame.ZIndex=50; FOVFrame.Visible=false; local FOV_SEGMENTS=60; local fovSegs={}; for i=1,FOV_SEGMENTS do local seg=Instance.new("Frame",FOVFrame); seg.BorderSizePixel=0; seg.AnchorPoint=Vector2.new(0.5,0.5); seg.ZIndex=50; fovSegs[i]=seg end; local fovFillFrame=Instance.new("Frame",FOVFrame); fovFillFrame.BackgroundColor3=Color3.fromRGB(130,0,255); fovFillFrame.BackgroundTransparency=0.85; fovFillFrame.AnchorPoint=Vector2.new(0.5,0.5); fovFillFrame.ZIndex=49; fovFillFrame.Visible=false; Instance.new("UICorner",fovFillFrame).CornerRadius=UDim.new(1,0)
-local function setSegLine(seg,x1,y1,x2,y2) local dx=x2-x1; local dy=y2-y1; local len=math.sqrt(dx*dx+dy*dy); if len<0.5 then seg.Visible=false; return end; seg.Visible=true; seg.Size=UDim2.new(0,len+1,0,2); seg.Position=UDim2.new(0,(x1+x2)/2,0,(y1+y2)/2); seg.Rotation=math.deg(math.atan2(dy,dx)) end
-local function MakeLine(parent,color,thickness) local line=Instance.new("Frame",parent); line.BackgroundColor3=color; line.BorderSizePixel=0; line.AnchorPoint=Vector2.new(0.5,0.5); line.ZIndex=3; line.Visible=false; line.Size=UDim2.new(0,1,0,thickness or 1.5); return line end
-local function SetLine(lf,x1,y1,x2,y2,thickness) local dx=x2-x1; local dy=y2-y1; local length=math.sqrt(dx*dx+dy*dy); if length<1 or length>4000 then lf.Visible=false; return end; lf.Size=UDim2.new(0,length,0,thickness or 1.5); lf.Position=UDim2.new(0,(x1+x2)/2,0,(y1+y2)/2); lf.Rotation=math.deg(math.atan2(dy,dx)); lf.Visible=true end
+-- ============================================================
+-- FOV CIRCLE
+-- ============================================================
+local FOVFrame=Instance.new("Frame",FOVContainer); FOVFrame.BackgroundTransparency=1; FOVFrame.Size=UDim2.new(1,0,1,0); FOVFrame.ZIndex=50; FOVFrame.Visible=false
+local FOV_SEGMENTS=60; local fovSegs={}
+for i=1,FOV_SEGMENTS do local seg=Instance.new("Frame",FOVFrame); seg.BorderSizePixel=0; seg.AnchorPoint=Vector2.new(0.5,0.5); seg.ZIndex=50; fovSegs[i]=seg end
+local fovFillFrame=Instance.new("Frame",FOVFrame); fovFillFrame.BackgroundColor3=Color3.fromRGB(130,0,255); fovFillFrame.BackgroundTransparency=0.85; fovFillFrame.AnchorPoint=Vector2.new(0.5,0.5); fovFillFrame.ZIndex=49; fovFillFrame.Visible=false; Instance.new("UICorner",fovFillFrame).CornerRadius=UDim.new(1,0)
 
--- ESP
-local ESPObjects={}; local espKeys={"Box","BoxFill","Name","HealthBG","HealthFill","ArmorBG","ArmorFill","Distance","Tool","Tracer","Kills","Deaths","ScoreLbl","Arrow"}
-local function CreateESP(plr) if plr==LocalPlayer or ESPObjects[plr] then return end; local o={}; o.Box=Instance.new("Frame",ESPContainer); o.Box.BackgroundTransparency=1; o.Box.BorderSizePixel=0; o.Box.ZIndex=3; o.Box.Visible=false; o.BoxStroke=Instance.new("UIStroke",o.Box); o.BoxStroke.Color=Settings.ESP.BoxColor; o.BoxStroke.Thickness=1.5; o.BoxCorner=Instance.new("UICorner",o.Box); o.BoxFill=Instance.new("Frame",ESPContainer); o.BoxFill.BackgroundTransparency=0.7; o.BoxFill.BorderSizePixel=0; o.BoxFill.ZIndex=2; o.BoxFill.Visible=false; Instance.new("UICorner",o.BoxFill); o.Name=Instance.new("TextLabel",ESPContainer); o.Name.BackgroundTransparency=1; o.Name.Font=Enum.Font.GothamBold; o.Name.TextSize=12; o.Name.TextStrokeTransparency=0; o.Name.TextStrokeColor3=Color3.fromRGB(0,0,0); o.Name.ZIndex=4; o.Name.Visible=false; o.HealthBG=Instance.new("Frame",ESPContainer); o.HealthBG.BackgroundColor3=Color3.fromRGB(0,0,0); o.HealthBG.BorderSizePixel=0; o.HealthBG.ZIndex=3; o.HealthBG.Visible=false; o.HealthFill=Instance.new("Frame",ESPContainer); o.HealthFill.BorderSizePixel=0; o.HealthFill.ZIndex=4; o.HealthFill.Visible=false; o.ArmorBG=Instance.new("Frame",ESPContainer); o.ArmorBG.BackgroundColor3=Color3.fromRGB(0,0,0); o.ArmorBG.BorderSizePixel=0; o.ArmorBG.ZIndex=3; o.ArmorBG.Visible=false; o.ArmorFill=Instance.new("Frame",ESPContainer); o.ArmorFill.BorderSizePixel=0; o.ArmorFill.ZIndex=4; o.ArmorFill.Visible=false; o.Distance=Instance.new("TextLabel",ESPContainer); o.Distance.BackgroundTransparency=1; o.Distance.Font=Enum.Font.GothamBold; o.Distance.TextSize=11; o.Distance.TextStrokeTransparency=0; o.Distance.TextStrokeColor3=Color3.fromRGB(0,0,0); o.Distance.ZIndex=4; o.Distance.Visible=false; o.Tool=Instance.new("TextLabel",ESPContainer); o.Tool.BackgroundTransparency=1; o.Tool.Font=Enum.Font.GothamBold; o.Tool.TextSize=10; o.Tool.TextStrokeTransparency=0; o.Tool.TextStrokeColor3=Color3.fromRGB(0,0,0); o.Tool.ZIndex=4; o.Tool.Visible=false; o.Kills=Instance.new("TextLabel",ESPContainer); o.Kills.BackgroundTransparency=1; o.Kills.Font=Enum.Font.GothamBold; o.Kills.TextSize=10; o.Kills.TextStrokeTransparency=0; o.Kills.TextStrokeColor3=Color3.fromRGB(0,0,0); o.Kills.ZIndex=4; o.Kills.Visible=false; o.Deaths=Instance.new("TextLabel",ESPContainer); o.Deaths.BackgroundTransparency=1; o.Deaths.Font=Enum.Font.GothamBold; o.Deaths.TextSize=10; o.Deaths.TextStrokeTransparency=0; o.Deaths.TextStrokeColor3=Color3.fromRGB(0,0,0); o.Deaths.ZIndex=4; o.Deaths.Visible=false; o.ScoreLbl=Instance.new("TextLabel",ESPContainer); o.ScoreLbl.BackgroundTransparency=1; o.ScoreLbl.Font=Enum.Font.GothamBold; o.ScoreLbl.TextSize=10; o.ScoreLbl.TextStrokeTransparency=0; o.ScoreLbl.TextStrokeColor3=Color3.fromRGB(0,0,0); o.ScoreLbl.ZIndex=4; o.ScoreLbl.Visible=false; o.Tracer=MakeLine(ESPContainer,Settings.ESP.TracerColor,1.5); o.Skeleton={}; for i=1,12 do o.Skeleton[i]=MakeLine(ESPContainer,Settings.ESP.SkeletonColor,1.5) end; o.Arrow=Instance.new("TextLabel",ESPContainer); o.Arrow.BackgroundTransparency=1; o.Arrow.Font=Enum.Font.GothamBold; o.Arrow.TextSize=24; o.Arrow.TextStrokeTransparency=0; o.Arrow.TextStrokeColor3=Color3.fromRGB(0,0,0); o.Arrow.ZIndex=5; o.Arrow.Visible=false; o.Arrow.Size=UDim2.new(0,30,0,30); o.Arrow.Text=">"; ESPObjects[plr]=o end
+local function setSegLine(seg,x1,y1,x2,y2)
+    local dx=x2-x1; local dy=y2-y1; local len=math.sqrt(dx*dx+dy*dy)
+    if len<0.5 then seg.Visible=false; return end
+    seg.Visible=true; seg.Size=UDim2.new(0,len+1,0,2); seg.Position=UDim2.new(0,(x1+x2)/2,0,(y1+y2)/2); seg.Rotation=math.deg(math.atan2(dy,dx))
+end
+
+local function MakeLine(parent,color,thickness)
+    local line=Instance.new("Frame",parent); line.BackgroundColor3=color; line.BorderSizePixel=0; line.AnchorPoint=Vector2.new(0.5,0.5); line.ZIndex=3; line.Visible=false; line.Size=UDim2.new(0,1,0,thickness or 1.5); return line
+end
+local function SetLine(lf,x1,y1,x2,y2,thickness)
+    local dx=x2-x1; local dy=y2-y1; local length=math.sqrt(dx*dx+dy*dy)
+    if length<1 or length>4000 then lf.Visible=false; return end
+    lf.Size=UDim2.new(0,length,0,thickness or 1.5); lf.Position=UDim2.new(0,(x1+x2)/2,0,(y1+y2)/2); lf.Rotation=math.deg(math.atan2(dy,dx)); lf.Visible=true
+end
+
+-- ============================================================
+-- ESP SYSTEM
+-- ============================================================
+local ESPObjects={}
+local espKeys={"Box","BoxFill","Name","HealthBG","HealthFill","ArmorBG","ArmorFill","Distance","Tool","Tracer","Kills","Deaths","ScoreLbl","Arrow"}
+
+local function CreateESP(plr)
+    if plr==LocalPlayer or ESPObjects[plr] then return end
+    local o={}
+    o.Box=Instance.new("Frame",ESPContainer); o.Box.BackgroundTransparency=1; o.Box.BorderSizePixel=0; o.Box.ZIndex=3; o.Box.Visible=false
+    o.BoxStroke=Instance.new("UIStroke",o.Box); o.BoxStroke.Color=Settings.ESP.BoxColor; o.BoxStroke.Thickness=1.5
+    o.BoxCorner=Instance.new("UICorner",o.Box)
+    o.BoxFill=Instance.new("Frame",ESPContainer); o.BoxFill.BackgroundTransparency=0.7; o.BoxFill.BorderSizePixel=0; o.BoxFill.ZIndex=2; o.BoxFill.Visible=false; Instance.new("UICorner",o.BoxFill)
+    o.Name=Instance.new("TextLabel",ESPContainer); o.Name.BackgroundTransparency=1; o.Name.Font=Enum.Font.GothamBold; o.Name.TextSize=12; o.Name.TextStrokeTransparency=0; o.Name.TextStrokeColor3=Color3.fromRGB(0,0,0); o.Name.ZIndex=4; o.Name.Visible=false
+    o.HealthBG=Instance.new("Frame",ESPContainer); o.HealthBG.BackgroundColor3=Color3.fromRGB(0,0,0); o.HealthBG.BorderSizePixel=0; o.HealthBG.ZIndex=3; o.HealthBG.Visible=false
+    o.HealthFill=Instance.new("Frame",ESPContainer); o.HealthFill.BorderSizePixel=0; o.HealthFill.ZIndex=4; o.HealthFill.Visible=false
+    o.ArmorBG=Instance.new("Frame",ESPContainer); o.ArmorBG.BackgroundColor3=Color3.fromRGB(0,0,0); o.ArmorBG.BorderSizePixel=0; o.ArmorBG.ZIndex=3; o.ArmorBG.Visible=false
+    o.ArmorFill=Instance.new("Frame",ESPContainer); o.ArmorFill.BorderSizePixel=0; o.ArmorFill.ZIndex=4; o.ArmorFill.Visible=false
+    o.Distance=Instance.new("TextLabel",ESPContainer); o.Distance.BackgroundTransparency=1; o.Distance.Font=Enum.Font.GothamBold; o.Distance.TextSize=11; o.Distance.TextStrokeTransparency=0; o.Distance.TextStrokeColor3=Color3.fromRGB(0,0,0); o.Distance.ZIndex=4; o.Distance.Visible=false
+    o.Tool=Instance.new("TextLabel",ESPContainer); o.Tool.BackgroundTransparency=1; o.Tool.Font=Enum.Font.GothamBold; o.Tool.TextSize=10; o.Tool.TextStrokeTransparency=0; o.Tool.TextStrokeColor3=Color3.fromRGB(0,0,0); o.Tool.ZIndex=4; o.Tool.Visible=false
+    o.Kills=Instance.new("TextLabel",ESPContainer); o.Kills.BackgroundTransparency=1; o.Kills.Font=Enum.Font.GothamBold; o.Kills.TextSize=10; o.Kills.TextStrokeTransparency=0; o.Kills.TextStrokeColor3=Color3.fromRGB(0,0,0); o.Kills.ZIndex=4; o.Kills.Visible=false
+    o.Deaths=Instance.new("TextLabel",ESPContainer); o.Deaths.BackgroundTransparency=1; o.Deaths.Font=Enum.Font.GothamBold; o.Deaths.TextSize=10; o.Deaths.TextStrokeTransparency=0; o.Deaths.TextStrokeColor3=Color3.fromRGB(0,0,0); o.Deaths.ZIndex=4; o.Deaths.Visible=false
+    o.ScoreLbl=Instance.new("TextLabel",ESPContainer); o.ScoreLbl.BackgroundTransparency=1; o.ScoreLbl.Font=Enum.Font.GothamBold; o.ScoreLbl.TextSize=10; o.ScoreLbl.TextStrokeTransparency=0; o.ScoreLbl.TextStrokeColor3=Color3.fromRGB(0,0,0); o.ScoreLbl.ZIndex=4; o.ScoreLbl.Visible=false
+    o.Tracer=MakeLine(ESPContainer,Settings.ESP.TracerColor,1.5)
+    o.Skeleton={}; for i=1,12 do o.Skeleton[i]=MakeLine(ESPContainer,Settings.ESP.SkeletonColor,1.5) end
+    o.Arrow=Instance.new("TextLabel",ESPContainer); o.Arrow.BackgroundTransparency=1; o.Arrow.Font=Enum.Font.GothamBold; o.Arrow.TextSize=24; o.Arrow.TextStrokeTransparency=0; o.Arrow.TextStrokeColor3=Color3.fromRGB(0,0,0); o.Arrow.ZIndex=5; o.Arrow.Visible=false; o.Arrow.Size=UDim2.new(0,30,0,30); o.Arrow.Text=">"
+    ESPObjects[plr]=o
+end
+
 local function HideESP(o) if not o then return end; for _,k in ipairs(espKeys) do if o[k] then o[k].Visible=false end end; if o.Skeleton then for _,l in ipairs(o.Skeleton) do l.Visible=false end end end
 local function DestroyESP(o) if not o then return end; for _,k in ipairs(espKeys) do if o[k] then o[k]:Destroy() end end; if o.Skeleton then for _,l in ipairs(o.Skeleton) do l:Destroy() end end end
 local function UpdateChams(plr,en) if not plr or not plr.Character then return end; local ex=plr.Character:FindFirstChild("FleexiHL"); if en and Settings.ESP.Enabled and Settings.ESP.Chams then if not ex then pcall(function() local h=Instance.new("Highlight"); h.Name="FleexiHL"; h.FillColor=Settings.ESP.ChamsColor; h.OutlineColor=Color3.fromRGB(200,100,255); h.FillTransparency=0.6; h.OutlineTransparency=0; h.DepthMode=Enum.HighlightDepthMode.AlwaysOnTop; h.Parent=plr.Character end) else ex.Enabled=true; ex.FillColor=Settings.ESP.ChamsColor end else if ex then ex.Enabled=false end end end
@@ -705,11 +1135,26 @@ local function WallCheck(part) if not Settings.Aimbot.WallCheck then return true
 local function aimActive() if not Settings.Aimbot.Enabled then return false end; if Settings.Aimbot.Mode=="Always" then return true end; if Settings.Aimbot.Mode=="Toggle" then return Settings.Aimbot.Toggled end; if Settings.Aimbot.Mode=="Hold" then return holdActive end; return false end
 local function getTargetPart(char) local bone=Settings.Aimbot.TargetBone; if bone=="Random" then local parts={"Head","UpperTorso","HumanoidRootPart","Torso"}; return char:FindFirstChild(parts[math.random(1,#parts)]) or char:FindFirstChild("Head") end; return char:FindFirstChild(bone) or char:FindFirstChild("Head") end
 
--- AA
+-- ============================================================
+-- ANTI-AIM
+-- ============================================================
 local aaYaw,aaTick=0,0
-RunService.Heartbeat:Connect(function(dt) if not Settings.AntiAim.Enabled then return end; local char=LocalPlayer.Character; if not char then return end; local root=char:FindFirstChild("HumanoidRootPart"); local hum=char:FindFirstChildOfClass("Humanoid"); if not(root and hum and hum.Health>0) then return end; local mode=Settings.AntiAim.Mode; local speed=Settings.AntiAim.YawSpeed; local pitch=math.rad(Settings.AntiAim.Pitch); if mode=="Spin" then aaYaw=aaYaw+math.rad(speed*dt*30) elseif mode=="Backward" then aaYaw=math.pi elseif mode=="Random" then aaTick=aaTick+dt; if aaTick>=0.3 then aaTick=0; aaYaw=math.random()*math.pi*2 end elseif mode=="Jitter" then aaYaw=math.sin(tick()*speed)*math.pi end; pcall(function() root.CFrame=CFrame.new(root.Position)*CFrame.Angles(pitch,aaYaw,0) end) end)
+RunService.Heartbeat:Connect(function(dt)
+    if not Settings.AntiAim.Enabled then return end
+    local char=LocalPlayer.Character; if not char then return end
+    local root=char:FindFirstChild("HumanoidRootPart"); local hum=char:FindFirstChildOfClass("Humanoid")
+    if not(root and hum and hum.Health>0) then return end
+    local mode=Settings.AntiAim.Mode; local speed=Settings.AntiAim.YawSpeed; local pitch=math.rad(Settings.AntiAim.Pitch)
+    if mode=="Spin" then aaYaw=aaYaw+math.rad(speed*dt*30)
+    elseif mode=="Backward" then aaYaw=math.pi
+    elseif mode=="Random" then aaTick=aaTick+dt; if aaTick>=0.3 then aaTick=0; aaYaw=math.random()*math.pi*2 end
+    elseif mode=="Jitter" then aaYaw=math.sin(tick()*speed)*math.pi end
+    pcall(function() root.CFrame=CFrame.new(root.Position)*CFrame.Angles(pitch,aaYaw,0) end)
+end)
 
--- Bhop
+-- ============================================================
+-- BHOP
+-- ============================================================
 RunService.Heartbeat:Connect(function()
     if not Settings.Misc.Bhop then return end
     local char=LocalPlayer.Character; if not char then return end
@@ -719,43 +1164,33 @@ RunService.Heartbeat:Connect(function()
     end
 end)
 
--- Anti-AFK
+-- ============================================================
+-- ANTI-AFK
+-- ============================================================
 local antiAfkTimer = 0
 RunService.Heartbeat:Connect(function(dt)
-    if not Settings.Misc.AntiAFK then
-        antiAfkTimer = 0
-        return
-    end
+    if not Settings.Misc.AntiAFK then antiAfkTimer = 0; return end
     antiAfkTimer = antiAfkTimer + dt
     if antiAfkTimer >= 60 then
         antiAfkTimer = 0
-        pcall(function()
-            VirtualUser:CaptureController()
-            VirtualUser:ClickButton2(Vector2.new(0, 0))
-        end)
-        pcall(function()
-            VirtualUser:SetKeyDown(0x77)
-            task.wait(0.1)
-            VirtualUser:SetKeyUp(0x77)
-        end)
+        pcall(function() VirtualUser:CaptureController(); VirtualUser:ClickButton2(Vector2.new(0, 0)) end)
+        pcall(function() VirtualUser:SetKeyDown(0x77); task.wait(0.1); VirtualUser:SetKeyUp(0x77) end)
     end
 end)
 pcall(function()
     LocalPlayer.Idled:Connect(function()
         if Settings.Misc.AntiAFK then
-            pcall(function()
-                VirtualUser:CaptureController()
-                VirtualUser:ClickButton2(Vector2.new(0, 0))
-            end)
+            pcall(function() VirtualUser:CaptureController(); VirtualUser:ClickButton2(Vector2.new(0, 0)) end)
         end
     end)
 end)
 
--- FOV & Third Person
+-- ============================================================
+-- FOV & THIRD PERSON
+-- ============================================================
+local prevFovEnabled, prevTPEnabled = false, false
 RunService.Heartbeat:Connect(function()
-    if Settings.Misc.FOVEnabled then
-        pcall(function() Camera.FieldOfView = Settings.Misc.FOV end)
-    end
+    if Settings.Misc.FOVEnabled then pcall(function() Camera.FieldOfView = Settings.Misc.FOV end) end
     if Settings.Misc.ForceThirdPerson then
         pcall(function()
             LocalPlayer.CameraMode = Enum.CameraMode.Classic
@@ -763,13 +1198,7 @@ RunService.Heartbeat:Connect(function()
             LocalPlayer.CameraMaxZoomDistance = 20
         end)
     end
-end)
-local prevFovEnabled = false
-local prevTPEnabled = false
-RunService.Heartbeat:Connect(function()
-    if prevFovEnabled and not Settings.Misc.FOVEnabled then
-        pcall(function() Camera.FieldOfView = defaultFOV end)
-    end
+    if prevFovEnabled and not Settings.Misc.FOVEnabled then pcall(function() Camera.FieldOfView = defaultFOV end) end
     prevFovEnabled = Settings.Misc.FOVEnabled
     if prevTPEnabled and not Settings.Misc.ForceThirdPerson then
         pcall(function()
@@ -781,39 +1210,55 @@ RunService.Heartbeat:Connect(function()
     prevTPEnabled = Settings.Misc.ForceThirdPerson
 end)
 
--- HANDS (FIXED v2 - Live motor tracking)
-local originalC1s = {}
+-- ============================================================
+-- HANDS POSITION (FULLY FIXED - R6 & R15 compatible)
+-- ============================================================
+local originalC0s = {}
+local motorTrackConn = nil
 
 handsResetAll = function()
-    for m, c1 in pairs(originalC1s) do
-        pcall(function() if m and m.Parent then m.C1 = c1 end end)
+    for m, c0 in pairs(originalC0s) do
+        pcall(function() if m and m.Parent then m.C0 = c0 end end)
     end
-    originalC1s = {}
+    originalC0s = {}
 end
 
 local function isArmMotor(motor)
     if not motor:IsA("Motor6D") then return false end
     local p1 = motor.Part1
     if not p1 then return false end
-    local n = p1.Name
-    return n=="RightUpperArm" or n=="RightLowerArm" or n=="RightHand"
-        or n=="LeftUpperArm"  or n=="LeftLowerArm"  or n=="LeftHand"
-        or n=="Right Arm"     or n=="Left Arm"
+    local n = p1.Name:lower()
+    return n:find("arm") ~= nil or n:find("hand") ~= nil
+        or n == "rightupperarm" or n == "rightlowerarm" or n == "righthand"
+        or n == "leftupperarm" or n == "leftlowerarm" or n == "lefthand"
+        or n == "right arm" or n == "left arm"
+end
+
+local function isArmMotorByP0(motor)
+    if not motor:IsA("Motor6D") then return false end
+    local p0 = motor.Part0
+    local p1 = motor.Part1
+    if not p0 or not p1 then return false end
+    local n0 = p0.Name:lower()
+    local n1 = p1.Name:lower()
+    return n1:find("arm") ~= nil or n1:find("hand") ~= nil
+        or n0:find("arm") ~= nil
 end
 
 LocalPlayer.CharacterAdded:Connect(function()
-    originalC1s = {}
+    originalC0s = {}
 end)
 
-RunService.Heartbeat:Connect(function()
+RunService.RenderStepped:Connect(function()
     if not Settings.Misc.HandsEnabled then return end
     local char = LocalPlayer.Character
     if not char then return end
 
+    -- Discover all arm motors
     for _, desc in ipairs(char:GetDescendants()) do
-        if desc:IsA("Motor6D") and isArmMotor(desc) then
-            if not originalC1s[desc] then
-                originalC1s[desc] = desc.C1
+        if desc:IsA("Motor6D") and (isArmMotor(desc) or isArmMotorByP0(desc)) then
+            if not originalC0s[desc] then
+                originalC0s[desc] = desc.C0
             end
         end
     end
@@ -821,20 +1266,22 @@ RunService.Heartbeat:Connect(function()
     local hx = Settings.Misc.HandsX / 10
     local hy = Settings.Misc.HandsY / 10
     local hz = Settings.Misc.HandsZ / 10
+    local hrx = math.rad(Settings.Misc.HandsRotX)
+    local hry = math.rad(Settings.Misc.HandsRotY)
+    local hrz = math.rad(Settings.Misc.HandsRotZ)
 
-    for motor, origC1 in pairs(originalC1s) do
+    for motor, origC0 in pairs(originalC0s) do
         pcall(function()
             if motor and motor.Parent and motor.Part1 then
-                local name = motor.Part1.Name
-                local isLeft = name:find("Left") ~= nil
-                local offX = isLeft and hx or -hx
-                motor.C1 = origC1 * CFrame.new(offX, hy, hz)
+                motor.C0 = origC0 * CFrame.new(hx, hy, hz) * CFrame.Angles(hrx, hry, hrz)
             end
         end)
     end
 end)
 
+-- ============================================================
 -- WORLD
+-- ============================================================
 local worldRainParts,worldSnowParts={},{}
 local originalPartColors={}
 local worldColorApplied=false
@@ -852,111 +1299,236 @@ local function applyWorldPartColors(col)
     end
     worldColorApplied=true
 end
+
 resetWorldPartColors = function()
     for part,col in pairs(originalPartColors) do pcall(function() if part and part.Parent then part.Color=col end end) end
     originalPartColors={}; worldColorApplied=false
 end
 
 RunService.Heartbeat:Connect(function(dt)
-    -- Ambient
     if Settings.World.AmbientEnabled then
         pcall(function() Lighting.Ambient=Settings.World.AmbientColor; Lighting.OutdoorAmbient=Settings.World.AmbientColor end)
     end
-
-    -- Sky Color (FIXED v2 - Strong tint via Atmosphere + Fog + Skybox override)
     if Settings.World.SkyEnabled then
         pcall(function()
             local col = Settings.World.SkyColor
-
-            -- Blank out existing skybox textures
             for _, child in ipairs(Lighting:GetChildren()) do
                 if child:IsA("Sky") and child.Name ~= "FleexiSky" then
-                    child.CelestialBodiesShown = false
-                    child.StarCount = 0
-                    child.SkyboxBk = "rbxasset://textures/blackBkgd_Texture.png"
-                    child.SkyboxDn = "rbxasset://textures/blackBkgd_Texture.png"
-                    child.SkyboxFt = "rbxasset://textures/blackBkgd_Texture.png"
-                    child.SkyboxLf = "rbxasset://textures/blackBkgd_Texture.png"
-                    child.SkyboxRt = "rbxasset://textures/blackBkgd_Texture.png"
-                    child.SkyboxUp = "rbxasset://textures/blackBkgd_Texture.png"
+                    child.CelestialBodiesShown = false; child.StarCount = 0
+                    local blank = "rbxasset://textures/blackBkgd_Texture.png"
+                    child.SkyboxBk=blank; child.SkyboxDn=blank; child.SkyboxFt=blank; child.SkyboxLf=blank; child.SkyboxRt=blank; child.SkyboxUp=blank
                 end
             end
-
-            Lighting.ClockTime = 14
-            Lighting.ColorShift_Top = col
-            Lighting.ColorShift_Bottom = col
-            Lighting.FogColor = col
-            Lighting.FogEnd = 500
-            Lighting.FogStart = 0
-
+            Lighting.ClockTime = 14; Lighting.ColorShift_Top = col; Lighting.ColorShift_Bottom = col
+            Lighting.FogColor = col; Lighting.FogEnd = 500; Lighting.FogStart = 0
             local atmo = Lighting:FindFirstChild("FleexiAtmo")
-            if not atmo then
-                atmo = Instance.new("Atmosphere")
-                atmo.Name = "FleexiAtmo"
-                atmo.Parent = Lighting
-            end
-            atmo.Color = col
-            atmo.Decay = col
-            atmo.Glare = 0
-            atmo.Haze = 10
-            atmo.Density = 0.5
+            if not atmo then atmo = Instance.new("Atmosphere"); atmo.Name = "FleexiAtmo"; atmo.Parent = Lighting end
+            atmo.Color = col; atmo.Decay = col; atmo.Glare = 0; atmo.Haze = 10; atmo.Density = 0.5
         end)
     end
-
-    -- Part colors
-    if Settings.World.ChangePartColors and not worldColorApplied then
-        applyWorldPartColors(Settings.World.AmbientColor)
-    elseif not Settings.World.ChangePartColors and worldColorApplied then
-        resetWorldPartColors()
-    end
+    if Settings.World.ChangePartColors and not worldColorApplied then applyWorldPartColors(Settings.World.AmbientColor)
+    elseif not Settings.World.ChangePartColors and worldColorApplied then resetWorldPartColors() end
 
     -- Rain
     if Settings.World.Rain then
-        if #worldRainParts<40 then local p=Instance.new("Part"); p.Name="FleexiWRain"; p.Anchored=true; p.CanCollide=false; p.CastShadow=false; p.Size=Vector3.new(0.1,2,0.1); p.Material=Enum.Material.Neon; p.Color=Color3.fromRGB(150,180,255); p.Transparency=0.3; local hrp=LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart"); if hrp then p.Position=hrp.Position+Vector3.new(math.random(-30,30),math.random(20,40),math.random(-30,30)); p.Parent=workspace; table.insert(worldRainParts,{part=p,life=0}) end end
+        if #worldRainParts<40 then
+            local p=Instance.new("Part"); p.Name="FleexiWRain"; p.Anchored=true; p.CanCollide=false; p.CastShadow=false; p.Size=Vector3.new(0.1,2,0.1); p.Material=Enum.Material.Neon; p.Color=Color3.fromRGB(150,180,255); p.Transparency=0.3
+            local hrp=LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+            if hrp then p.Position=hrp.Position+Vector3.new(math.random(-30,30),math.random(20,40),math.random(-30,30)); p.Parent=workspace; table.insert(worldRainParts,{part=p,life=0}) end
+        end
         for i=#worldRainParts,1,-1 do local r=worldRainParts[i]; r.life=r.life+dt; r.part.Position=r.part.Position-Vector3.new(0,60*dt,0); if r.life>1.5 then r.part:Destroy(); table.remove(worldRainParts,i) end end
     else for _,r in ipairs(worldRainParts) do r.part:Destroy() end; worldRainParts={} end
 
     -- Snow
     if Settings.World.Snow then
-        if #worldSnowParts<30 then local p=Instance.new("Part"); p.Name="FleexiWSnow"; p.Anchored=true; p.CanCollide=false; p.CastShadow=false; p.Size=Vector3.new(0.3,0.3,0.3); p.Shape=Enum.PartType.Ball; p.Material=Enum.Material.Neon; p.Color=Color3.fromRGB(240,240,255); p.Transparency=0.1; local hrp=LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart"); if hrp then p.Position=hrp.Position+Vector3.new(math.random(-25,25),math.random(15,35),math.random(-25,25)); p.Parent=workspace; table.insert(worldSnowParts,{part=p,life=0,vx=(math.random()-0.5)*2}) end end
+        if #worldSnowParts<30 then
+            local p=Instance.new("Part"); p.Name="FleexiWSnow"; p.Anchored=true; p.CanCollide=false; p.CastShadow=false; p.Size=Vector3.new(0.3,0.3,0.3); p.Shape=Enum.PartType.Ball; p.Material=Enum.Material.Neon; p.Color=Color3.fromRGB(240,240,255); p.Transparency=0.1
+            local hrp=LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+            if hrp then p.Position=hrp.Position+Vector3.new(math.random(-25,25),math.random(15,35),math.random(-25,25)); p.Parent=workspace; table.insert(worldSnowParts,{part=p,life=0,vx=(math.random()-0.5)*2}) end
+        end
         for i=#worldSnowParts,1,-1 do local s=worldSnowParts[i]; s.life=s.life+dt; s.part.Position=s.part.Position+Vector3.new(s.vx*dt,-8*dt,0); if s.life>4 then s.part:Destroy(); table.remove(worldSnowParts,i) end end
     else for _,s in ipairs(worldSnowParts) do s.part:Destroy() end; worldSnowParts={} end
 end)
 
--- Jump Ring & Trail
+-- ============================================================
+-- JUMP RING & TRAIL
+-- ============================================================
 local jumpRings,trailParts,trailTimer={},{},0
 RunService.Heartbeat:Connect(function(dt)
-    if Settings.ESP.JumpRing then for _,plr in ipairs(Players:GetPlayers()) do if plr~=LocalPlayer and plr.Character then local hum=plr.Character:FindFirstChildOfClass("Humanoid"); local root=plr.Character:FindFirstChild("HumanoidRootPart"); if hum and root and hum:GetState()==Enum.HumanoidStateType.Jumping then if not plr:GetAttribute("FJ") then plr:SetAttribute("FJ",true); local ring=Instance.new("Part"); ring.Anchored=true; ring.CanCollide=false; ring.CastShadow=false; ring.Shape=Enum.PartType.Cylinder; ring.Size=Vector3.new(0.1,2,2); ring.CFrame=CFrame.new(root.Position-Vector3.new(0,3,0))*CFrame.Angles(0,0,math.rad(90)); ring.Material=Enum.Material.Neon; ring.Color=Settings.ESP.RingStart; ring.Parent=workspace; table.insert(jumpRings,{part=ring,life=0,maxLife=1.5}) end else plr:SetAttribute("FJ",nil) end end end end
+    if Settings.ESP.JumpRing then
+        for _,plr in ipairs(Players:GetPlayers()) do
+            if plr~=LocalPlayer and plr.Character then
+                local hum=plr.Character:FindFirstChildOfClass("Humanoid"); local root=plr.Character:FindFirstChild("HumanoidRootPart")
+                if hum and root and hum:GetState()==Enum.HumanoidStateType.Jumping then
+                    if not plr:GetAttribute("FJ") then plr:SetAttribute("FJ",true)
+                        local ring=Instance.new("Part"); ring.Anchored=true; ring.CanCollide=false; ring.CastShadow=false; ring.Shape=Enum.PartType.Cylinder; ring.Size=Vector3.new(0.1,2,2); ring.CFrame=CFrame.new(root.Position-Vector3.new(0,3,0))*CFrame.Angles(0,0,math.rad(90)); ring.Material=Enum.Material.Neon; ring.Color=Settings.ESP.RingStart; ring.Parent=workspace; table.insert(jumpRings,{part=ring,life=0,maxLife=1.5})
+                    end
+                else plr:SetAttribute("FJ",nil) end
+            end
+        end
+    end
     for i=#jumpRings,1,-1 do local r=jumpRings[i]; r.life=r.life+dt; if r.life>=r.maxLife then r.part:Destroy(); table.remove(jumpRings,i) else local pct=r.life/r.maxLife; local sz=2+pct*8; r.part.Size=Vector3.new(0.1,sz,sz); r.part.Transparency=pct*(Settings.ESP.RingFade+0.2) end end
-    if Settings.ESP.MovementTrail then trailTimer=trailTimer+dt; if trailTimer>=0.08 then trailTimer=0; for _,plr in ipairs(Players:GetPlayers()) do if plr~=LocalPlayer and plr.Character then local hum=plr.Character:FindFirstChildOfClass("Humanoid"); local root=plr.Character:FindFirstChild("HumanoidRootPart"); if hum and root and hum.MoveDirection.Magnitude>0.1 then local tp=Instance.new("Part"); tp.Anchored=true; tp.CanCollide=false; tp.CastShadow=false; tp.Size=Vector3.new(0.3,0.3,0.3); tp.Shape=Enum.PartType.Ball; tp.Position=root.Position-Vector3.new(0,2.5,0); tp.Material=Enum.Material.Neon; tp.Color=Settings.ESP.TrailStart; tp.Parent=workspace; table.insert(trailParts,{part=tp,life=0,maxLife=2}) end end end end end
+    if Settings.ESP.MovementTrail then
+        trailTimer=trailTimer+dt; if trailTimer>=0.08 then trailTimer=0
+            for _,plr in ipairs(Players:GetPlayers()) do
+                if plr~=LocalPlayer and plr.Character then
+                    local hum=plr.Character:FindFirstChildOfClass("Humanoid"); local root=plr.Character:FindFirstChild("HumanoidRootPart")
+                    if hum and root and hum.MoveDirection.Magnitude>0.1 then
+                        local tp=Instance.new("Part"); tp.Anchored=true; tp.CanCollide=false; tp.CastShadow=false; tp.Size=Vector3.new(0.3,0.3,0.3); tp.Shape=Enum.PartType.Ball; tp.Position=root.Position-Vector3.new(0,2.5,0); tp.Material=Enum.Material.Neon; tp.Color=Settings.ESP.TrailStart; tp.Parent=workspace; table.insert(trailParts,{part=tp,life=0,maxLife=2})
+                    end
+                end
+            end
+        end
+    end
     for i=#trailParts,1,-1 do local t=trailParts[i]; t.life=t.life+dt; if t.life>=t.maxLife then t.part:Destroy(); table.remove(trailParts,i) else local pct=t.life/t.maxLife; t.part.Transparency=pct*Settings.ESP.TrailFade; local sz=0.3*(1-pct*0.5); t.part.Size=Vector3.new(sz,sz,sz) end end
 end)
 
--- MAIN RENDER
+-- ============================================================
+-- MAIN RENDER LOOP
+-- ============================================================
 RunService.RenderStepped:Connect(function()
     local viewport=Camera.ViewportSize; local vx=viewport.X; local vy=viewport.Y; local cx=vx/2; local cy=vy/2; local center2=Vector2.new(cx,cy)
-    if Settings.Aimbot.Enabled and Settings.Aimbot.ShowFOV and not Settings.Aimbot.Mode360 then FOVFrame.Visible=true; local r=Settings.Aimbot.FOV; for i=1,FOV_SEGMENTS do fovSegs[i].BackgroundColor3=Settings.Aimbot.FovColor; local a1=(i-1)/FOV_SEGMENTS*math.pi*2; local a2=i/FOV_SEGMENTS*math.pi*2; setSegLine(fovSegs[i],cx+math.cos(a1)*r,cy+math.sin(a1)*r,cx+math.cos(a2)*r,cy+math.sin(a2)*r) end; if Settings.Aimbot.FovFill then fovFillFrame.Visible=true; fovFillFrame.Size=UDim2.new(0,r*2,0,r*2); fovFillFrame.Position=UDim2.new(0,cx,0,cy); fovFillFrame.BackgroundColor3=Settings.Aimbot.FovFillColor; fovFillFrame.BackgroundTransparency=0.85 else fovFillFrame.Visible=false end else FOVFrame.Visible=false; fovFillFrame.Visible=false; for i=1,FOV_SEGMENTS do fovSegs[i].Visible=false end end
-    if aimActive() then local best,bestD=nil,math.huge; local fovLimit=Settings.Aimbot.Mode360 and 99999 or Settings.Aimbot.FOV; for _,plr in ipairs(Players:GetPlayers()) do if plr~=LocalPlayer and plr.Character and not(Settings.ESP.TeamCheck and plr.Team and LocalPlayer.Team and plr.Team==LocalPlayer.Team) then local target=getTargetPart(plr.Character); local hum=plr.Character:FindFirstChildOfClass("Humanoid"); if target and hum and hum.Health>0 then local sp,onScreen=Camera:WorldToViewportPoint(target.Position); if sp.Z>0 then local d; if Settings.Aimbot.Mode360 then local myRoot=LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart"); d=myRoot and (myRoot.Position-target.Position).Magnitude or 9999 else d=onScreen and (Vector2.new(sp.X,sp.Y)-center2).Magnitude or 99999 end; if d<=fovLimit and d<bestD and WallCheck(target) then bestD=d; best=plr end end end end end; if best and best.Character then local target=getTargetPart(best.Character); if target then Camera.CFrame=Camera.CFrame:Lerp(CFrame.new(Camera.CFrame.Position,target.Position),math.clamp(Settings.Aimbot.Smooth,0.005,1)) end end end
-    local activePlrs={}; for _,plr in ipairs(Players:GetPlayers()) do if plr~=LocalPlayer then activePlrs[plr]=true end end; for plr,_ in pairs(ESPObjects) do if not activePlrs[plr] then DestroyESP(ESPObjects[plr]); ESPObjects[plr]=nil end end
-    for plr,_ in pairs(activePlrs) do if not ESPObjects[plr] then CreateESP(plr) end; local o=ESPObjects[plr]; if not o then continue end; local char=plr.Character; local skipTeam=Settings.ESP.TeamCheck and plr.Team and LocalPlayer.Team and plr.Team==LocalPlayer.Team; if not(char and Settings.ESP.Enabled) or skipTeam then HideESP(o); UpdateChams(plr,false); UpdateAura(plr,false) else local root=char:FindFirstChild("HumanoidRootPart"); local head=char:FindFirstChild("Head"); local hum=char:FindFirstChildOfClass("Humanoid"); if not(root and head and hum and hum.Health>0) then HideESP(o); UpdateChams(plr,false); UpdateAura(plr,false) else local myRoot=LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart"); local dist=myRoot and math.floor((myRoot.Position-root.Position).Magnitude) or 0; if dist>Settings.ESP.MaxDistance then HideESP(o); UpdateChams(plr,false); UpdateAura(plr,false) else local rootCF=root.CFrame; local corners={Vector3.new(2,3,1.5),Vector3.new(-2,3,1.5),Vector3.new(2,-3,1.5),Vector3.new(-2,-3,1.5),Vector3.new(2,3,-1.5),Vector3.new(-2,3,-1.5),Vector3.new(2,-3,-1.5),Vector3.new(-2,-3,-1.5)}; local minX,minY=math.huge,math.huge; local maxX,maxY=-math.huge,-math.huge; local anyInFront=false; for _,c in ipairs(corners) do local wp=rootCF:PointToWorldSpace(c); local sp=Camera:WorldToViewportPoint(wp); if sp.Z>0 then anyInFront=true; if sp.X<minX then minX=sp.X end; if sp.Y<minY then minY=sp.Y end; if sp.X>maxX then maxX=sp.X end; if sp.Y>maxY then maxY=sp.Y end end end
-                    if not anyInFront and Settings.ESP.OffScreenArrows then local sp3=Camera:WorldToViewportPoint(root.Position); local dir=Vector2.new(sp3.X-cx,sp3.Y-cy); if dir.Magnitude>0 then dir=dir.Unit; local ad=math.min(vx,vy)*0.4; o.Arrow.Position=UDim2.new(0,cx+dir.X*ad-15,0,cy+dir.Y*ad-15); o.Arrow.Rotation=math.deg(math.atan2(dir.Y,dir.X)); o.Arrow.TextColor3=Settings.ESP.ArrowColor; o.Arrow.Visible=true else o.Arrow.Visible=false end else o.Arrow.Visible=false end
-                    if not anyInFront then HideESP(o); o.Arrow.Visible=Settings.ESP.OffScreenArrows and o.Arrow.Visible; UpdateChams(plr,true); UpdateAura(plr,true) else o.Arrow.Visible=false; local bW=math.max(maxX-minX,8); local bH=math.max(maxY-minY,12); local bX=minX; local bY=minY; local tSize=Settings.ESP.ESPTextScale; local rounding=Settings.ESP.BoxRounding
+
+    -- FOV Circle
+    if Settings.Aimbot.Enabled and Settings.Aimbot.ShowFOV and not Settings.Aimbot.Mode360 then
+        FOVFrame.Visible=true; local r=Settings.Aimbot.FOV
+        for i=1,FOV_SEGMENTS do fovSegs[i].BackgroundColor3=Settings.Aimbot.FovColor; local a1=(i-1)/FOV_SEGMENTS*math.pi*2; local a2=i/FOV_SEGMENTS*math.pi*2; setSegLine(fovSegs[i],cx+math.cos(a1)*r,cy+math.sin(a1)*r,cx+math.cos(a2)*r,cy+math.sin(a2)*r) end
+        if Settings.Aimbot.FovFill then fovFillFrame.Visible=true; fovFillFrame.Size=UDim2.new(0,r*2,0,r*2); fovFillFrame.Position=UDim2.new(0,cx,0,cy); fovFillFrame.BackgroundColor3=Settings.Aimbot.FovFillColor; fovFillFrame.BackgroundTransparency=0.85 else fovFillFrame.Visible=false end
+    else FOVFrame.Visible=false; fovFillFrame.Visible=false; for i=1,FOV_SEGMENTS do fovSegs[i].Visible=false end end
+
+    -- Aimbot
+    if aimActive() then
+        local best,bestD=nil,math.huge; local fovLimit=Settings.Aimbot.Mode360 and 99999 or Settings.Aimbot.FOV
+        for _,plr in ipairs(Players:GetPlayers()) do
+            if plr~=LocalPlayer and plr.Character and not(Settings.ESP.TeamCheck and plr.Team and LocalPlayer.Team and plr.Team==LocalPlayer.Team) then
+                local target=getTargetPart(plr.Character); local hum=plr.Character:FindFirstChildOfClass("Humanoid")
+                if target and hum and hum.Health>0 then
+                    local sp,onScreen=Camera:WorldToViewportPoint(target.Position)
+                    if sp.Z>0 then
+                        local d
+                        if Settings.Aimbot.Mode360 then
+                            local myRoot=LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+                            d=myRoot and (myRoot.Position-target.Position).Magnitude or 9999
+                        else d=onScreen and (Vector2.new(sp.X,sp.Y)-center2).Magnitude or 99999 end
+                        if d<=fovLimit and d<bestD and WallCheck(target) then bestD=d; best=plr end
+                    end
+                end
+            end
+        end
+        if best and best.Character then
+            lastAimTarget = best
+            local target=getTargetPart(best.Character)
+            if target then Camera.CFrame=Camera.CFrame:Lerp(CFrame.new(Camera.CFrame.Position,target.Position),math.clamp(Settings.Aimbot.Smooth,0.005,1)) end
+        end
+    end
+
+    -- ESP
+    local activePlrs={}; for _,plr in ipairs(Players:GetPlayers()) do if plr~=LocalPlayer then activePlrs[plr]=true end end
+    for plr,_ in pairs(ESPObjects) do if not activePlrs[plr] then DestroyESP(ESPObjects[plr]); ESPObjects[plr]=nil end end
+
+    for plr,_ in pairs(activePlrs) do
+        if not ESPObjects[plr] then CreateESP(plr) end
+        local o=ESPObjects[plr]; if not o then continue end
+        local char=plr.Character; local skipTeam=Settings.ESP.TeamCheck and plr.Team and LocalPlayer.Team and plr.Team==LocalPlayer.Team
+        if not(char and Settings.ESP.Enabled) or skipTeam then HideESP(o); UpdateChams(plr,false); UpdateAura(plr,false) else
+            local root=char:FindFirstChild("HumanoidRootPart"); local head=char:FindFirstChild("Head"); local hum=char:FindFirstChildOfClass("Humanoid")
+            if not(root and head and hum and hum.Health>0) then HideESP(o); UpdateChams(plr,false); UpdateAura(plr,false) else
+                local myRoot=LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+                local dist=myRoot and math.floor((myRoot.Position-root.Position).Magnitude) or 0
+                if dist>Settings.ESP.MaxDistance then HideESP(o); UpdateChams(plr,false); UpdateAura(plr,false) else
+                    local rootCF=root.CFrame
+                    local corners={Vector3.new(2,3,1.5),Vector3.new(-2,3,1.5),Vector3.new(2,-3,1.5),Vector3.new(-2,-3,1.5),Vector3.new(2,3,-1.5),Vector3.new(-2,3,-1.5),Vector3.new(2,-3,-1.5),Vector3.new(-2,-3,-1.5)}
+                    local minX,minY=math.huge,math.huge; local maxX,maxY=-math.huge,-math.huge; local anyInFront=false
+                    for _,c in ipairs(corners) do local wp=rootCF:PointToWorldSpace(c); local sp=Camera:WorldToViewportPoint(wp); if sp.Z>0 then anyInFront=true; if sp.X<minX then minX=sp.X end; if sp.Y<minY then minY=sp.Y end; if sp.X>maxX then maxX=sp.X end; if sp.Y>maxY then maxY=sp.Y end end end
+
+                    if not anyInFront and Settings.ESP.OffScreenArrows then
+                        local sp3=Camera:WorldToViewportPoint(root.Position); local dir=Vector2.new(sp3.X-cx,sp3.Y-cy)
+                        if dir.Magnitude>0 then dir=dir.Unit; local ad=math.min(vx,vy)*0.4; o.Arrow.Position=UDim2.new(0,cx+dir.X*ad-15,0,cy+dir.Y*ad-15); o.Arrow.Rotation=math.deg(math.atan2(dir.Y,dir.X)); o.Arrow.TextColor3=Settings.ESP.ArrowColor; o.Arrow.Visible=true else o.Arrow.Visible=false end
+                    else o.Arrow.Visible=false end
+
+                    if not anyInFront then HideESP(o); o.Arrow.Visible=Settings.ESP.OffScreenArrows and o.Arrow.Visible; UpdateChams(plr,true); UpdateAura(plr,true) else
+                        o.Arrow.Visible=false
+                        local bW=math.max(maxX-minX,8); local bH=math.max(maxY-minY,12); local bX=minX; local bY=minY
+                        local tSize=Settings.ESP.ESPTextScale; local rounding=Settings.ESP.BoxRounding
+
                         if Settings.ESP.Boxes then o.Box.Visible=true; o.Box.Size=UDim2.new(0,bW,0,bH); o.Box.Position=UDim2.new(0,bX,0,bY); o.BoxStroke.Color=Settings.ESP.BoxColor; o.BoxCorner.CornerRadius=UDim.new(0,rounding); o.BoxStroke.Thickness=Settings.ESP.BoxOutline and 1.5 or 0 else o.Box.Visible=false end
                         if Settings.ESP.FilledBox then o.BoxFill.Visible=true; o.BoxFill.Size=UDim2.new(0,bW,0,bH); o.BoxFill.Position=UDim2.new(0,bX,0,bY); o.BoxFill.BackgroundColor3=Settings.ESP.FillColor; o.BoxFill.BackgroundTransparency=Settings.ESP.FillFade else o.BoxFill.Visible=false end
                         if Settings.ESP.Names then o.Name.Visible=true; o.Name.Size=UDim2.new(0,bW+40,0,tSize+4); o.Name.Position=UDim2.new(0,bX-20,0,bY-tSize-6); o.Name.Text=plr.Name; o.Name.TextColor3=Settings.ESP.NameColor; o.Name.TextSize=tSize else o.Name.Visible=false end
-                        local maxHP=math.max(hum.MaxHealth,1); local hpPct=math.clamp(hum.Health/maxHP,0,1); if Settings.ESP.Health then local barW=4; local barX=bX-barW-3; o.HealthBG.Visible=true; o.HealthBG.Size=UDim2.new(0,barW,0,bH); o.HealthBG.Position=UDim2.new(0,barX,0,bY); local barH=bH*hpPct; o.HealthFill.Visible=true; o.HealthFill.Size=UDim2.new(0,barW,0,barH); o.HealthFill.Position=UDim2.new(0,barX,0,bY+(bH-barH)); o.HealthFill.BackgroundColor3=Color3.fromRGB(math.floor(255*(1-hpPct)),math.floor(200*hpPct),60) else o.HealthBG.Visible=false; o.HealthFill.Visible=false end
+
+                        local maxHP=math.max(hum.MaxHealth,1); local hpPct=math.clamp(hum.Health/maxHP,0,1)
+                        if Settings.ESP.Health then
+                            local barW=4; local barX=bX-barW-3
+                            o.HealthBG.Visible=true; o.HealthBG.Size=UDim2.new(0,barW,0,bH); o.HealthBG.Position=UDim2.new(0,barX,0,bY)
+                            local barH=bH*hpPct; o.HealthFill.Visible=true; o.HealthFill.Size=UDim2.new(0,barW,0,barH); o.HealthFill.Position=UDim2.new(0,barX,0,bY+(bH-barH)); o.HealthFill.BackgroundColor3=Color3.fromRGB(math.floor(255*(1-hpPct)),math.floor(200*hpPct),60)
+                        else o.HealthBG.Visible=false; o.HealthFill.Visible=false end
+
                         if Settings.ESP.ArmorBar then local barW=4; local barX=bX+bW+3; o.ArmorBG.Visible=true; o.ArmorBG.Size=UDim2.new(0,barW,0,bH); o.ArmorBG.Position=UDim2.new(0,barX,0,bY); o.ArmorFill.Visible=true; o.ArmorFill.Size=UDim2.new(0,barW,0,bH*0.5); o.ArmorFill.Position=UDim2.new(0,barX,0,bY+bH*0.5); o.ArmorFill.BackgroundColor3=Settings.ESP.ArmorColor else o.ArmorBG.Visible=false; o.ArmorFill.Visible=false end
-                        local bottomY=bY+bH+2; if Settings.ESP.Distance then o.Distance.Visible=true; o.Distance.Size=UDim2.new(0,bW+40,0,tSize+2); o.Distance.Position=UDim2.new(0,bX-20,0,bottomY); o.Distance.Text=tostring(dist).."m"; o.Distance.TextColor3=Settings.ESP.DistanceColor; o.Distance.TextSize=tSize-1; bottomY=bottomY+tSize+2 else o.Distance.Visible=false end
+
+                        local bottomY=bY+bH+2
+                        if Settings.ESP.Distance then o.Distance.Visible=true; o.Distance.Size=UDim2.new(0,bW+40,0,tSize+2); o.Distance.Position=UDim2.new(0,bX-20,0,bottomY); o.Distance.Text=tostring(dist).."m"; o.Distance.TextColor3=Settings.ESP.DistanceColor; o.Distance.TextSize=tSize-1; bottomY=bottomY+tSize+2 else o.Distance.Visible=false end
                         if Settings.ESP.ShowTool then local tool=char:FindFirstChildOfClass("Tool"); if tool then o.Tool.Visible=true; o.Tool.Size=UDim2.new(0,bW+60,0,tSize); o.Tool.Position=UDim2.new(0,bX-30,0,bottomY); o.Tool.Text=tool.Name; o.Tool.TextColor3=Color3.fromRGB(255,220,120); o.Tool.TextSize=tSize-2; bottomY=bottomY+tSize else o.Tool.Visible=false end else o.Tool.Visible=false end
-                        local ls=plr:FindFirstChild("leaderstats"); if Settings.ESP.Kills then local kv=ls and (ls:FindFirstChild("Kills") or ls:FindFirstChild("kills") or ls:FindFirstChild("KOs")); if kv then o.Kills.Visible=true; o.Kills.Size=UDim2.new(0,bW+40,0,tSize); o.Kills.Position=UDim2.new(0,bX-20,0,bottomY); o.Kills.Text="K:"..tostring(kv.Value); o.Kills.TextColor3=Settings.ESP.KillsColor; o.Kills.TextSize=tSize-2; bottomY=bottomY+tSize else o.Kills.Visible=false end else o.Kills.Visible=false end
+
+                        local ls=plr:FindFirstChild("leaderstats")
+                        if Settings.ESP.Kills then local kv=ls and (ls:FindFirstChild("Kills") or ls:FindFirstChild("kills") or ls:FindFirstChild("KOs")); if kv then o.Kills.Visible=true; o.Kills.Size=UDim2.new(0,bW+40,0,tSize); o.Kills.Position=UDim2.new(0,bX-20,0,bottomY); o.Kills.Text="K:"..tostring(kv.Value); o.Kills.TextColor3=Settings.ESP.KillsColor; o.Kills.TextSize=tSize-2; bottomY=bottomY+tSize else o.Kills.Visible=false end else o.Kills.Visible=false end
                         if Settings.ESP.Deaths then local dv=ls and (ls:FindFirstChild("Deaths") or ls:FindFirstChild("deaths") or ls:FindFirstChild("WOs")); if dv then o.Deaths.Visible=true; o.Deaths.Size=UDim2.new(0,bW+40,0,tSize); o.Deaths.Position=UDim2.new(0,bX-20,0,bottomY); o.Deaths.Text="D:"..tostring(dv.Value); o.Deaths.TextColor3=Settings.ESP.DeathsColor; o.Deaths.TextSize=tSize-2; bottomY=bottomY+tSize else o.Deaths.Visible=false end else o.Deaths.Visible=false end
                         if Settings.ESP.Score then local sv=ls and (ls:FindFirstChild("Score") or ls:FindFirstChild("score") or ls:FindFirstChild("Points")); if sv then o.ScoreLbl.Visible=true; o.ScoreLbl.Size=UDim2.new(0,bW+40,0,tSize); o.ScoreLbl.Position=UDim2.new(0,bX-20,0,bottomY); o.ScoreLbl.Text="S:"..tostring(sv.Value); o.ScoreLbl.TextColor3=Settings.ESP.ScoreColor; o.ScoreLbl.TextSize=tSize-2 else o.ScoreLbl.Visible=false end else o.ScoreLbl.Visible=false end
-                        if Settings.ESP.Tracers then local startX,startY; if Settings.ESP.TracerStart=="Top" then startX=cx; startY=0 elseif Settings.ESP.TracerStart=="Center" then startX=cx; startY=cy else startX=cx; startY=vy end; local endX,endY; if Settings.ESP.TracerEnd=="Top" then endX=bX+bW/2; endY=bY elseif Settings.ESP.TracerEnd=="Center" then endX=bX+bW/2; endY=bY+bH/2 else endX=bX+bW/2; endY=bY+bH end; SetLine(o.Tracer,startX,startY,endX,endY,Settings.ESP.TracerThickness); o.Tracer.BackgroundColor3=Settings.ESP.TracerColor else o.Tracer.Visible=false end
-                        if Settings.ESP.Skeleton then local function get(name) return char:FindFirstChild(name) end; local bones={}; local uT=get("UpperTorso"); local lT=get("LowerTorso"); local hd=get("Head"); if uT then bones={{hd,uT},{uT,lT},{uT,get("LeftUpperArm")},{get("LeftUpperArm"),get("LeftLowerArm")},{get("LeftLowerArm"),get("LeftHand")},{uT,get("RightUpperArm")},{get("RightUpperArm"),get("RightLowerArm")},{get("RightLowerArm"),get("RightHand")},{lT,get("LeftUpperLeg")},{get("LeftUpperLeg"),get("LeftLowerLeg")},{get("LeftLowerLeg"),get("LeftFoot")},{lT,get("RightUpperLeg")}} else local t=get("Torso"); if t then bones={{hd,t},{t,get("Left Arm")},{t,get("Right Arm")},{t,get("Left Leg")},{t,get("Right Leg")}} end end; for idx=1,#o.Skeleton do local ln=o.Skeleton[idx]; local pair=bones[idx]; if pair and pair[1] and pair[2] then local v1=Camera:WorldToViewportPoint(pair[1].Position); local v2=Camera:WorldToViewportPoint(pair[2].Position); if v1.Z>0 and v2.Z>0 then SetLine(ln,v1.X,v1.Y,v2.X,v2.Y,Settings.ESP.SkeletonThickness); ln.BackgroundColor3=Settings.ESP.SkeletonColor else ln.Visible=false end else ln.Visible=false end end else for _,l in ipairs(o.Skeleton) do l.Visible=false end end
-                        UpdateChams(plr,true); UpdateAura(plr,true) end end end end end
+
+                        if Settings.ESP.Tracers then
+                            local startX,startY
+                            if Settings.ESP.TracerStart=="Top" then startX=cx; startY=0 elseif Settings.ESP.TracerStart=="Center" then startX=cx; startY=cy else startX=cx; startY=vy end
+                            local endX,endY
+                            if Settings.ESP.TracerEnd=="Top" then endX=bX+bW/2; endY=bY elseif Settings.ESP.TracerEnd=="Center" then endX=bX+bW/2; endY=bY+bH/2 else endX=bX+bW/2; endY=bY+bH end
+                            SetLine(o.Tracer,startX,startY,endX,endY,Settings.ESP.TracerThickness); o.Tracer.BackgroundColor3=Settings.ESP.TracerColor
+                        else o.Tracer.Visible=false end
+
+                        if Settings.ESP.Skeleton then
+                            local function get(name) return char:FindFirstChild(name) end
+                            local bones={}
+                            local uT=get("UpperTorso"); local lT=get("LowerTorso"); local hd=get("Head")
+                            if uT then
+                                bones={{hd,uT},{uT,lT},{uT,get("LeftUpperArm")},{get("LeftUpperArm"),get("LeftLowerArm")},{get("LeftLowerArm"),get("LeftHand")},{uT,get("RightUpperArm")},{get("RightUpperArm"),get("RightLowerArm")},{get("RightLowerArm"),get("RightHand")},{lT,get("LeftUpperLeg")},{get("LeftUpperLeg"),get("LeftLowerLeg")},{get("LeftLowerLeg"),get("LeftFoot")},{lT,get("RightUpperLeg")}}
+                            else
+                                local t=get("Torso")
+                                if t then bones={{hd,t},{t,get("Left Arm")},{t,get("Right Arm")},{t,get("Left Leg")},{t,get("Right Leg")}} end
+                            end
+                            for idx=1,#o.Skeleton do
+                                local ln=o.Skeleton[idx]; local pair=bones[idx]
+                                if pair and pair[1] and pair[2] then
+                                    local v1=Camera:WorldToViewportPoint(pair[1].Position); local v2=Camera:WorldToViewportPoint(pair[2].Position)
+                                    if v1.Z>0 and v2.Z>0 then SetLine(ln,v1.X,v1.Y,v2.X,v2.Y,Settings.ESP.SkeletonThickness); ln.BackgroundColor3=Settings.ESP.SkeletonColor else ln.Visible=false end
+                                else ln.Visible=false end
+                            end
+                        else for _,l in ipairs(o.Skeleton) do l.Visible=false end end
+
+                        UpdateChams(plr,true); UpdateAura(plr,true)
+                    end
+                end
+            end
+        end
+    end
 end)
 
-local function setupPlayer(plr) if plr==LocalPlayer then return end; CreateESP(plr); plr.CharacterAdded:Connect(function() task.wait(0.5); if ESPObjects[plr] then DestroyESP(ESPObjects[plr]); ESPObjects[plr]=nil end; CreateESP(plr) end) end
-Players.PlayerAdded:Connect(setupPlayer); Players.PlayerRemoving:Connect(function(plr) if ESPObjects[plr] then DestroyESP(ESPObjects[plr]); ESPObjects[plr]=nil end end)
+-- ============================================================
+-- PLAYER SETUP
+-- ============================================================
+local function setupPlayer(plr)
+    if plr==LocalPlayer then return end
+    CreateESP(plr)
+    setupHealthTracking(plr)
+    plr.CharacterAdded:Connect(function()
+        task.wait(0.5)
+        if ESPObjects[plr] then DestroyESP(ESPObjects[plr]); ESPObjects[plr]=nil end
+        CreateESP(plr)
+    end)
+end
+
+Players.PlayerAdded:Connect(setupPlayer)
+Players.PlayerRemoving:Connect(function(plr) if ESPObjects[plr] then DestroyESP(ESPObjects[plr]); ESPObjects[plr]=nil end; trackedHealths[plr]=nil end)
 for _,plr in ipairs(Players:GetPlayers()) do setupPlayer(plr) end
-retranslateAll(); updateAimBtnVis(); updateAimModeBtnVis()
+
+retranslateAll()
+updateAimBtnVis()
+updateAimModeBtnVis()
+
+addConsoleLog("FLEEXI v1.3 Remake loaded successfully!", Color3.fromRGB(130, 255, 130))
+addConsoleLog("Universal Edition - All games supported", Color3.fromRGB(180, 140, 255))
