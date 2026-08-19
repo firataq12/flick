@@ -1,6 +1,4 @@
--- // FLEEXI v1.4 - Universal Ultimate Edition
--- // Fixed: Console Logs, HitSound, Hit Effect, Death Sound, Hands Position
--- // New Features Added
+-- // FLEEXI v1.4.1 - Universal Fixed Edition
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
@@ -9,24 +7,25 @@ local TweenService = game:GetService("TweenService")
 local VirtualUser = game:GetService("VirtualUser")
 local Lighting = game:GetService("Lighting")
 local SoundService = game:GetService("SoundService")
-local StarterGui = game:GetService("StarterGui")
 local Debris = game:GetService("Debris")
 local Camera = workspace.CurrentCamera
 local LocalPlayer = Players.LocalPlayer
 
--- Console Log System
+-- ========== CONSOLE LOG SYSTEM (defined FIRST) ==========
 local ConsoleLog = {}
 local function logConsole(level, msg)
-    local entry = {
-        time = os.clock(),
-        level = level,
-        message = msg,
-        timestamp = os.date("%H:%M:%S")
-    }
-    table.insert(ConsoleLog, entry)
-    if #ConsoleLog > 200 then table.remove(ConsoleLog, 1) end
+    local ok, err = pcall(function()
+        table.insert(ConsoleLog, {
+            time = os.clock(),
+            level = tostring(level or "INFO"),
+            message = tostring(msg or ""),
+            timestamp = os.date("%H:%M:%S")
+        })
+        if #ConsoleLog > 200 then table.remove(ConsoleLog, 1) end
+    end)
 end
-logConsole("INFO", "FLEEXI v1.4 initializing...")
+
+logConsole("INFO", "FLEEXI v1.4.1 starting...")
 
 local defaultFOV = Camera.FieldOfView
 local defaultMinZoom = LocalPlayer.CameraMinZoomDistance
@@ -84,14 +83,14 @@ local Settings = {
         HandsEnabled = false, HandsX = 0, HandsY = 0, HandsZ = 0,
     },
     HitSound = {
-        Enabled = false, SoundId = "rbxassetid://6333183385", Volume = 1.0, Pitch = 1.0,
+        Enabled = false, SoundId = "rbxassetid://5793463150", Volume = 1.0, Pitch = 1.0,
     },
     HitEffect = {
         Enabled = false, EffectType = "Spark",
         Color = Color3.fromRGB(255,80,80), Size = 1.0, Duration = 0.5,
     },
     DeathSound = {
-        Enabled = false, SoundId = "rbxassetid://5765933874", Volume = 1.0, Pitch = 1.0,
+        Enabled = false, SoundId = "rbxassetid://5153734608", Volume = 1.0, Pitch = 1.0,
     },
     ConsoleSettings = {
         Enabled = false, ShowHits = true, ShowKills = true,
@@ -141,7 +140,7 @@ local L = {
         esp_on="ESP",boxes="Kutular",names="Isimler",health="Saglik",distance="Mesafe",tracers="Cizgiler",skeleton="Iskelet",chams="Chams",
         team_check="Takim Kontrolü",show_tool="Silah",max_dist="Maks Mesafe",box_color="Kutu Rengi",name_color="Isim Rengi",tracer_color="Cizgi Rengi",
         skel_color="Iskelet Rengi",chams_color="Chams Rengi",filled_box="Dolu Kutu",fill_color="Dolgu Rengi",fill_fade="Saydamlik",
-        box_outline="Cerceve",box_rounding="Yuvarlaklık",skel_thick="Iskelet Kalinlik",health_color="Saglik Rengi",
+        box_outline="Cerceve",box_rounding="Yuvarlaklik",skel_thick="Iskelet Kalinlik",health_color="Saglik Rengi",
         armor_bar="Zirh Bari",armor_color="Zirh Rengi",dist_color="Mesafe Rengi",esp_text_scale="Yazi Boyutu",
         kills="Kill",kills_color="Kill Rengi",deaths="Ölüm",deaths_color="Ölüm Rengi",score_show="Skor",score_color="Skor Rengi",
         tracer_thick="Cizgi Kalinlik",tracer_start="Baslangic",tracer_end="Bitis",pos_top="Üst",pos_center="Orta",pos_bottom="Alt",
@@ -271,7 +270,7 @@ local LoadFrame=Instance.new("Frame",ScreenGui); LoadFrame.Size=UDim2.new(1,0,1,
 local LoadLogo=Instance.new("TextLabel",LoadFrame); LoadLogo.Size=UDim2.new(0,90,0,90); LoadLogo.Position=UDim2.new(0.5,-45,0.5,-100); LoadLogo.BackgroundColor3=Color3.fromRGB(90,0,200); LoadLogo.Text="F"; LoadLogo.TextSize=46; LoadLogo.Font=Enum.Font.GothamBold; LoadLogo.TextColor3=Color3.fromRGB(255,255,255); LoadLogo.ZIndex=1000; Instance.new("UICorner",LoadLogo).CornerRadius=UDim.new(1,0)
 local logoStroke=Instance.new("UIStroke",LoadLogo); logoStroke.Color=Color3.fromRGB(180,80,255); logoStroke.Thickness=3
 local LoadTitle=Instance.new("TextLabel",LoadFrame); LoadTitle.Size=UDim2.new(1,0,0,50); LoadTitle.Position=UDim2.new(0,0,0.5,5); LoadTitle.BackgroundTransparency=1; LoadTitle.Text="FLEEXI"; LoadTitle.TextColor3=Color3.fromRGB(220,140,255); LoadTitle.Font=Enum.Font.GothamBold; LoadTitle.TextSize=42; LoadTitle.ZIndex=1000
-local LoadSub=Instance.new("TextLabel",LoadFrame); LoadSub.Size=UDim2.new(1,0,0,20); LoadSub.Position=UDim2.new(0,0,0.5,55); LoadSub.BackgroundTransparency=1; LoadSub.Text="v1.4 Universal"; LoadSub.TextColor3=Color3.fromRGB(150,80,200); LoadSub.Font=Enum.Font.GothamMedium; LoadSub.TextSize=14; LoadSub.ZIndex=1000
+local LoadSub=Instance.new("TextLabel",LoadFrame); LoadSub.Size=UDim2.new(1,0,0,20); LoadSub.Position=UDim2.new(0,0,0.5,55); LoadSub.BackgroundTransparency=1; LoadSub.Text="v1.4.1"; LoadSub.TextColor3=Color3.fromRGB(150,80,200); LoadSub.Font=Enum.Font.GothamMedium; LoadSub.TextSize=14; LoadSub.ZIndex=1000
 local LoadBarBG=Instance.new("Frame",LoadFrame); LoadBarBG.Size=UDim2.new(0,240,0,6); LoadBarBG.Position=UDim2.new(0.5,-120,0.5,90); LoadBarBG.BackgroundColor3=Color3.fromRGB(25,12,45); LoadBarBG.BorderSizePixel=0; LoadBarBG.ZIndex=1000; Instance.new("UICorner",LoadBarBG).CornerRadius=UDim.new(1,0)
 local LoadBar=Instance.new("Frame",LoadBarBG); LoadBar.Size=UDim2.new(0,0,1,0); LoadBar.BackgroundColor3=Color3.fromRGB(140,0,255); LoadBar.BorderSizePixel=0; LoadBar.ZIndex=1001; Instance.new("UICorner",LoadBar).CornerRadius=UDim.new(1,0)
 task.spawn(function()
@@ -284,39 +283,37 @@ task.spawn(function()
     TweenService:Create(LoadBarBG,TweenInfo.new(0.4),{BackgroundTransparency=1}):Play()
     TweenService:Create(LoadBar,TweenInfo.new(0.4),{BackgroundTransparency=1}):Play()
     task.wait(0.55); LoadFrame:Destroy()
-    logConsole("INFO", "Loading complete")
 end)
 
 local ESPContainer=Instance.new("Frame",ScreenGui); ESPContainer.Size=UDim2.new(1,0,1,0); ESPContainer.BackgroundTransparency=1; ESPContainer.ZIndex=1
 local FOVContainer=Instance.new("Frame",ScreenGui); FOVContainer.Size=UDim2.new(1,0,1,0); FOVContainer.BackgroundTransparency=1; FOVContainer.ZIndex=50
 local CrosshairContainer=Instance.new("Frame",ScreenGui); CrosshairContainer.Size=UDim2.new(1,0,1,0); CrosshairContainer.BackgroundTransparency=1; CrosshairContainer.ZIndex=55
 
--- ===================== HIT SOUND SYSTEM =====================
-local function playHitSound(position)
+-- ===================== HIT SOUND (FIXED) =====================
+local function playHitSound()
     if not Settings.HitSound.Enabled then return end
     pcall(function()
         local sound = Instance.new("Sound")
         sound.SoundId = Settings.HitSound.SoundId
         sound.Volume = Settings.HitSound.Volume
         sound.PlaybackSpeed = Settings.HitSound.Pitch
-        sound.RollOffMaxDistance = 10000
-        sound.RollOffMinDistance = 10000
         sound.Parent = SoundService
         sound:Play()
         Debris:AddItem(sound, 3)
-        logConsole("HIT", "Hit sound played")
     end)
+    logConsole("HIT", "Hit sound played")
 end
 
--- ===================== HIT EFFECT SYSTEM =====================
+-- ===================== HIT EFFECT (FIXED) =====================
 local function createHitEffect(position)
     if not Settings.HitEffect.Enabled then return end
-    pcall(function()
-        local effectType = Settings.HitEffect.EffectType
-        local col = Settings.HitEffect.Color
-        local sz = Settings.HitEffect.Size
-        local dur = Settings.HitEffect.Duration
+    if not position then return end
+    local effectType = Settings.HitEffect.EffectType
+    local col = Settings.HitEffect.Color
+    local sz = Settings.HitEffect.Size
+    local dur = Settings.HitEffect.Duration
 
+    pcall(function()
         if effectType == "Spark" then
             for i = 1, 6 do
                 local part = Instance.new("Part")
@@ -334,13 +331,12 @@ local function createHitEffect(position)
                     while elapsed < dur do
                         local dt = RunService.Heartbeat:Wait()
                         elapsed = elapsed + dt
+                        if not part.Parent then break end
                         part.Position = part.Position + dir * dt * 2
                         dir = dir * 0.94
                         part.Transparency = elapsed / dur
-                        local s = math.max(0.02, 0.1 * sz * (1 - elapsed/dur))
-                        part.Size = Vector3.new(s, s, 0.8 * sz * (1 - elapsed/dur))
                     end
-                    part:Destroy()
+                    if part.Parent then part:Destroy() end
                 end)
             end
         elseif effectType == "Ring" then
@@ -359,11 +355,12 @@ local function createHitEffect(position)
                 while elapsed < dur do
                     local dt = RunService.Heartbeat:Wait()
                     elapsed = elapsed + dt
+                    if not ring.Parent then break end
                     local expand = 0.5 * sz + (elapsed / dur) * 6 * sz
                     ring.Size = Vector3.new(0.05, expand, expand)
                     ring.Transparency = elapsed / dur
                 end
-                ring:Destroy()
+                if ring.Parent then ring:Destroy() end
             end)
         elseif effectType == "Cross" then
             for i = 1, 4 do
@@ -381,11 +378,12 @@ local function createHitEffect(position)
                     while elapsed < dur do
                         local dt = RunService.Heartbeat:Wait()
                         elapsed = elapsed + dt
+                        if not part.Parent then break end
                         local expand = 2 * sz + (elapsed / dur) * 3 * sz
                         part.Size = Vector3.new(0.15 * sz * (1 - elapsed/dur), 0.15 * sz * (1 - elapsed/dur), expand)
                         part.Transparency = elapsed / dur
                     end
-                    part:Destroy()
+                    if part.Parent then part:Destroy() end
                 end)
             end
         elseif effectType == "Splash" then
@@ -406,21 +404,20 @@ local function createHitEffect(position)
                     while elapsed < dur do
                         local dt = RunService.Heartbeat:Wait()
                         elapsed = elapsed + dt
+                        if not part.Parent then break end
                         vel = vel + Vector3.new(0, -20 * dt, 0)
                         part.Position = part.Position + vel * dt
                         part.Transparency = elapsed / dur
-                        local s = math.max(0.02, 0.15 * sz * (1 - elapsed/dur * 0.5))
-                        part.Size = Vector3.new(s, s, s)
                     end
-                    part:Destroy()
+                    if part.Parent then part:Destroy() end
                 end)
             end
         end
-        logConsole("EFFECT", "Hit effect: " .. effectType)
     end)
+    logConsole("EFFECT", "Hit effect: " .. effectType)
 end
 
--- ===================== DEATH SOUND SYSTEM =====================
+-- ===================== DEATH SOUND =====================
 local function playDeathSound()
     if not Settings.DeathSound.Enabled then return end
     pcall(function()
@@ -428,64 +425,75 @@ local function playDeathSound()
         sound.SoundId = Settings.DeathSound.SoundId
         sound.Volume = Settings.DeathSound.Volume
         sound.PlaybackSpeed = Settings.DeathSound.Pitch
-        sound.RollOffMaxDistance = 10000
-        sound.RollOffMinDistance = 10000
         sound.Parent = SoundService
         sound:Play()
         Debris:AddItem(sound, 5)
-        logConsole("DEATH", "Death sound played")
     end)
+    logConsole("DEATH", "Death sound played")
 end
 
--- Universal Health Tracking for Hit/Death detection
+-- Universal Health Tracking (FIXED - proper connections)
 local trackedHealths = {}
+local healthConnections = {}
+
 local function trackPlayerHealth(plr)
     if plr == LocalPlayer then return end
+
     local function onCharacterAdded(char)
-        task.wait(0.5)
+        task.wait(1)
+        if not char or not char.Parent then return end
         local hum = char:FindFirstChildOfClass("Humanoid")
         if not hum then return end
+
         trackedHealths[plr] = hum.Health
-        hum.HealthChanged:Connect(function(newHP)
+
+        -- Disconnect old connections
+        if healthConnections[plr] then
+            for _, conn in ipairs(healthConnections[plr]) do
+                pcall(function() conn:Disconnect() end)
+            end
+        end
+        healthConnections[plr] = {}
+
+        local conn1 = hum.HealthChanged:Connect(function(newHP)
             local oldHP = trackedHealths[plr] or hum.MaxHealth
             local dmg = oldHP - newHP
             trackedHealths[plr] = newHP
 
             if dmg > 0.5 then
-                -- Someone took damage
-                local headPart = char:FindFirstChild("Head") or char:FindFirstChild("HumanoidRootPart")
-                local hitPos = headPart and headPart.Position or Vector3.new(0,0,0)
+                local headPart = char:FindFirstChild("Head") or char:FindFirstChild("HumanoidRootPart") or char:FindFirstChild("Torso")
+                local hitPos = headPart and headPart.Position or nil
 
-                playHitSound(hitPos)
-                createHitEffect(hitPos)
+                playHitSound()
+                if hitPos then createHitEffect(hitPos) end
 
                 if Settings.ConsoleSettings.Enabled and Settings.ConsoleSettings.ShowDamage then
                     logConsole("DAMAGE", plr.Name .. " took " .. math.floor(dmg) .. " damage")
                 end
             end
-
-            if newHP <= 0 then
-                playDeathSound()
-                if Settings.ConsoleSettings.Enabled and Settings.ConsoleSettings.ShowKills then
-                    logConsole("KILL", plr.Name .. " died")
-                end
-            end
         end)
-        hum.Died:Connect(function()
+        table.insert(healthConnections[plr], conn1)
+
+        local conn2 = hum.Died:Connect(function()
             playDeathSound()
             if Settings.ConsoleSettings.Enabled and Settings.ConsoleSettings.ShowKills then
                 logConsole("KILL", plr.Name .. " died")
             end
         end)
+        table.insert(healthConnections[plr], conn2)
     end
-    if plr.Character then onCharacterAdded(plr.Character) end
+
+    if plr.Character then
+        task.spawn(function() onCharacterAdded(plr.Character) end)
+    end
     plr.CharacterAdded:Connect(onCharacterAdded)
 end
 
--- Also track local player death
+-- Local death tracking
 local function trackLocalDeath()
     local function onChar(char)
-        task.wait(0.5)
+        task.wait(1)
+        if not char or not char.Parent then return end
         local hum = char:FindFirstChildOfClass("Humanoid")
         if not hum then return end
         hum.Died:Connect(function()
@@ -494,7 +502,7 @@ local function trackLocalDeath()
             end
         end)
     end
-    if LocalPlayer.Character then onChar(LocalPlayer.Character) end
+    if LocalPlayer.Character then task.spawn(function() onChar(LocalPlayer.Character) end) end
     LocalPlayer.CharacterAdded:Connect(onChar)
 end
 trackLocalDeath()
@@ -605,9 +613,9 @@ local function updateAllBtnSizes()
 end
 
 local scAimState,scEspState,scBhopState=false,true,false
-scAimBtn.MouseButton1Click:Connect(function() scAimState=not scAimState; Settings.Aimbot.Enabled=scAimState; scAimBtn.BackgroundColor3=scAimState and Color3.fromRGB(90,0,200) or Color3.fromRGB(15,5,30); updateAimBtnVis(); updateAimModeBtnVis(); logConsole("INFO","Aimbot "..(scAimState and "ON" or "OFF")) end)
-scEspBtn.MouseButton1Click:Connect(function() scEspState=not scEspState; Settings.ESP.Enabled=scEspState; scEspBtn.BackgroundColor3=scEspState and Color3.fromRGB(90,0,200) or Color3.fromRGB(15,5,30); logConsole("INFO","ESP "..(scEspState and "ON" or "OFF")) end)
-scBhopBtn.MouseButton1Click:Connect(function() scBhopState=not scBhopState; Settings.Misc.Bhop=scBhopState; scBhopBtn.BackgroundColor3=scBhopState and Color3.fromRGB(90,0,200) or Color3.fromRGB(15,5,30); logConsole("INFO","Bhop "..(scBhopState and "ON" or "OFF")) end)
+scAimBtn.MouseButton1Click:Connect(function() scAimState=not scAimState; Settings.Aimbot.Enabled=scAimState; scAimBtn.BackgroundColor3=scAimState and Color3.fromRGB(90,0,200) or Color3.fromRGB(15,5,30); updateAimBtnVis(); updateAimModeBtnVis() end)
+scEspBtn.MouseButton1Click:Connect(function() scEspState=not scEspState; Settings.ESP.Enabled=scEspState; scEspBtn.BackgroundColor3=scEspState and Color3.fromRGB(90,0,200) or Color3.fromRGB(15,5,30) end)
+scBhopBtn.MouseButton1Click:Connect(function() scBhopState=not scBhopState; Settings.Misc.Bhop=scBhopState; scBhopBtn.BackgroundColor3=scBhopState and Color3.fromRGB(90,0,200) or Color3.fromRGB(15,5,30) end)
 
 -- TOGGLE BUTTON
 local ToggleBtn=Instance.new("TextButton",ScreenGui)
@@ -663,7 +671,7 @@ local TopBar=Instance.new("Frame",Main); TopBar.Size=UDim2.new(1,0,0,46); TopBar
 local logoBg=Instance.new("Frame",TopBar); logoBg.Size=UDim2.new(0,32,0,32); logoBg.Position=UDim2.new(0,12,0.5,-16); logoBg.BackgroundColor3=Color3.fromRGB(90,0,200); logoBg.ZIndex=102; Instance.new("UICorner",logoBg).CornerRadius=UDim.new(0,8)
 local logoTxt=Instance.new("TextLabel",logoBg); logoTxt.Size=UDim2.new(1,0,1,0); logoTxt.BackgroundTransparency=1; logoTxt.Text="F"; logoTxt.TextSize=16; logoTxt.Font=Enum.Font.GothamBold; logoTxt.TextColor3=Color3.fromRGB(255,255,255); logoTxt.ZIndex=103
 local TitleLbl=Instance.new("TextLabel",TopBar); TitleLbl.Size=UDim2.new(0,120,1,0); TitleLbl.Position=UDim2.new(0,52,0,0); TitleLbl.BackgroundTransparency=1; TitleLbl.Text="FLEEXI"; TitleLbl.TextColor3=Color3.fromRGB(220,140,255); TitleLbl.Font=Enum.Font.GothamBold; TitleLbl.TextSize=20; TitleLbl.TextXAlignment=Enum.TextXAlignment.Left; TitleLbl.ZIndex=102
-local VerLbl=Instance.new("TextLabel",TopBar); VerLbl.Size=UDim2.new(0,34,0,14); VerLbl.Position=UDim2.new(0,155,0.5,-7); VerLbl.BackgroundColor3=Color3.fromRGB(60,0,130); VerLbl.BorderSizePixel=0; VerLbl.Text="v1.4"; VerLbl.TextColor3=Color3.fromRGB(220,180,255); VerLbl.Font=Enum.Font.GothamBold; VerLbl.TextSize=9; VerLbl.ZIndex=102; Instance.new("UICorner",VerLbl).CornerRadius=UDim.new(0,4)
+local VerLbl=Instance.new("TextLabel",TopBar); VerLbl.Size=UDim2.new(0,42,0,14); VerLbl.Position=UDim2.new(0,155,0.5,-7); VerLbl.BackgroundColor3=Color3.fromRGB(60,0,130); VerLbl.BorderSizePixel=0; VerLbl.Text="v1.4.1"; VerLbl.TextColor3=Color3.fromRGB(220,180,255); VerLbl.Font=Enum.Font.GothamBold; VerLbl.TextSize=9; VerLbl.ZIndex=102; Instance.new("UICorner",VerLbl).CornerRadius=UDim.new(0,4)
 local CloseBtnMain=Instance.new("TextButton",TopBar); CloseBtnMain.Size=UDim2.new(0,30,0,30); CloseBtnMain.Position=UDim2.new(1,-40,0.5,-15); CloseBtnMain.BackgroundColor3=Color3.fromRGB(25,8,45); CloseBtnMain.Text="X"; CloseBtnMain.TextColor3=Color3.fromRGB(180,80,255); CloseBtnMain.Font=Enum.Font.GothamBold; CloseBtnMain.TextSize=13; CloseBtnMain.ZIndex=102; CloseBtnMain.AutoButtonColor=false; Instance.new("UICorner",CloseBtnMain).CornerRadius=UDim.new(0,8)
 local divTop=Instance.new("Frame",Main); divTop.Size=UDim2.new(1,0,0,1); divTop.Position=UDim2.new(0,0,0,50); divTop.BackgroundColor3=Color3.fromRGB(45,15,90); divTop.BorderSizePixel=0; divTop.ZIndex=101
 local Sidebar=Instance.new("Frame",Main); Sidebar.Size=UDim2.new(0,130,1,-52); Sidebar.Position=UDim2.new(0,0,0,51); Sidebar.BackgroundColor3=Color3.fromRGB(11,6,20); Sidebar.BackgroundTransparency=0.15; Sidebar.BorderSizePixel=0; Sidebar.ZIndex=101
@@ -743,9 +751,8 @@ local function MakeColorBtn(parent,labelKey,initial,callback,order) local frame=
 local handsResetAll
 local resetWorldPartColors
 
--- ===== ALL PANELS =====
--- AIM
-MakeToggle(AimPanel,"aimbot_on",false,function(v) Settings.Aimbot.Enabled=v; updateAimBtnVis(); updateAimModeBtnVis(); logConsole("INFO","Aimbot "..(v and "ON" or "OFF")) end,1)
+-- ===== AIM PANEL =====
+MakeToggle(AimPanel,"aimbot_on",false,function(v) Settings.Aimbot.Enabled=v; updateAimBtnVis(); updateAimModeBtnVis() end,1)
 MakeToggle(AimPanel,"wall_check",false,function(v) Settings.Aimbot.WallCheck=v end,2)
 MakeToggle(AimPanel,"fov_circle",true,function(v) Settings.Aimbot.ShowFOV=v end,3)
 MakeToggle(AimPanel,"fov_fill",false,function(v) Settings.Aimbot.FovFill=v end,4)
@@ -757,20 +764,17 @@ MakeSlider(AimPanel,"fov_size",30,400,120,"px",function(v) Settings.Aimbot.FOV=v
 MakeColorBtn(AimPanel,"fov_color",Settings.Aimbot.FovColor,function(c) Settings.Aimbot.FovColor=c end,10)
 MakeColorBtn(AimPanel,"fov_fill_color",Settings.Aimbot.FovFillColor,function(c) Settings.Aimbot.FovFillColor=c end,11)
 
--- HIT SOUND
-MakeToggle(AimPanel,"hit_sound",false,function(v) Settings.HitSound.Enabled=v; logConsole("INFO","Hit Sound "..(v and "ON" or "OFF")) end,12)
+MakeToggle(AimPanel,"hit_sound",false,function(v) Settings.HitSound.Enabled=v end,12)
 MakeSlider(AimPanel,"hit_sound_vol",0,100,100,"%",function(v) Settings.HitSound.Volume=v/100 end,13)
 MakeSlider(AimPanel,"hit_sound_pitch",50,200,100,"%",function(v) Settings.HitSound.Pitch=v/100 end,14)
 
--- HIT EFFECT
-MakeToggle(AimPanel,"hit_effect",false,function(v) Settings.HitEffect.Enabled=v; logConsole("INFO","Hit Effect "..(v and "ON" or "OFF")) end,15)
+MakeToggle(AimPanel,"hit_effect",false,function(v) Settings.HitEffect.Enabled=v end,15)
 MakeDropdown(AimPanel,"hit_effect_type",{{key="eff_spark",value="Spark"},{key="eff_ring",value="Ring"},{key="eff_cross",value="Cross"},{key="eff_splash",value="Splash"}},1,function(v) Settings.HitEffect.EffectType=v end,16)
 MakeSlider(AimPanel,"hit_effect_size",10,50,10,"",function(v) Settings.HitEffect.Size=v/10 end,17)
 MakeSlider(AimPanel,"hit_effect_dur",10,100,50,"%",function(v) Settings.HitEffect.Duration=v/100 end,18)
 MakeColorBtn(AimPanel,"hit_effect_color",Settings.HitEffect.Color,function(c) Settings.HitEffect.Color=c end,19)
 
--- DEATH SOUND
-MakeToggle(AimPanel,"death_sound",false,function(v) Settings.DeathSound.Enabled=v; logConsole("INFO","Death Sound "..(v and "ON" or "OFF")) end,20)
+MakeToggle(AimPanel,"death_sound",false,function(v) Settings.DeathSound.Enabled=v end,20)
 MakeSlider(AimPanel,"death_sound_vol",0,100,100,"%",function(v) Settings.DeathSound.Volume=v/100 end,21)
 MakeSlider(AimPanel,"death_sound_pitch",50,200,100,"%",function(v) Settings.DeathSound.Pitch=v/100 end,22)
 
@@ -787,7 +791,7 @@ MakeSlider(CHPanel,"ch_oy",-200,200,0,"",function(v) Settings.Crosshair.OffsetY=
 MakeSlider(CHPanel,"ch_dot_size",1,20,4,"px",function(v) Settings.Crosshair.DotSize=v end,10)
 MakeColorBtn(CHPanel,"ch_color",Settings.Crosshair.Color,function(c) Settings.Crosshair.Color=c end,11)
 
--- ESP (same as before)
+-- ESP
 MakeToggle(EspPanel,"esp_on",true,function(v) Settings.ESP.Enabled=v end,1); MakeToggle(EspPanel,"boxes",true,function(v) Settings.ESP.Boxes=v end,2); MakeToggle(EspPanel,"filled_box",false,function(v) Settings.ESP.FilledBox=v end,3); MakeToggle(EspPanel,"box_outline",true,function(v) Settings.ESP.BoxOutline=v end,4); MakeToggle(EspPanel,"names",true,function(v) Settings.ESP.Names=v end,5); MakeToggle(EspPanel,"health",true,function(v) Settings.ESP.Health=v end,6); MakeToggle(EspPanel,"distance",true,function(v) Settings.ESP.Distance=v end,7); MakeToggle(EspPanel,"tracers",true,function(v) Settings.ESP.Tracers=v end,8); MakeToggle(EspPanel,"skeleton",true,function(v) Settings.ESP.Skeleton=v end,9); MakeToggle(EspPanel,"chams",true,function(v) Settings.ESP.Chams=v end,10); MakeToggle(EspPanel,"show_tool",true,function(v) Settings.ESP.ShowTool=v end,11); MakeToggle(EspPanel,"team_check",false,function(v) Settings.ESP.TeamCheck=v end,12); MakeToggle(EspPanel,"armor_bar",false,function(v) Settings.ESP.ArmorBar=v end,13); MakeToggle(EspPanel,"kills",false,function(v) Settings.ESP.Kills=v end,14); MakeToggle(EspPanel,"deaths",false,function(v) Settings.ESP.Deaths=v end,15); MakeToggle(EspPanel,"score_show",false,function(v) Settings.ESP.Score=v end,16); MakeToggle(EspPanel,"offscreen_arrows",false,function(v) Settings.ESP.OffScreenArrows=v end,17); MakeToggle(EspPanel,"aura_glow",false,function(v) Settings.ESP.AuraGlow=v end,18); MakeToggle(EspPanel,"jump_ring",false,function(v) Settings.ESP.JumpRing=v end,19); MakeToggle(EspPanel,"move_trail",false,function(v) Settings.ESP.MovementTrail=v end,20)
 MakeSlider(EspPanel,"max_dist",100,5000,2000,"m",function(v) Settings.ESP.MaxDistance=v end,21); MakeSlider(EspPanel,"esp_text_scale",8,24,12,"px",function(v) Settings.ESP.ESPTextScale=v end,22); MakeSlider(EspPanel,"box_rounding",0,20,0,"px",function(v) Settings.ESP.BoxRounding=v end,23); MakeSlider(EspPanel,"skel_thick",1,5,2,"px",function(v) Settings.ESP.SkeletonThickness=v end,24); MakeSlider(EspPanel,"tracer_thick",1,5,2,"px",function(v) Settings.ESP.TracerThickness=v end,25); MakeSlider(EspPanel,"fill_fade",0,100,70,"%",function(v) Settings.ESP.FillFade=v/100 end,26); MakeSlider(EspPanel,"ring_fade",0,100,80,"%",function(v) Settings.ESP.RingFade=v/100 end,27); MakeSlider(EspPanel,"trail_fade",0,100,90,"%",function(v) Settings.ESP.TrailFade=v/100 end,28)
 MakeDropdown(EspPanel,"tracer_start",{{key="pos_bottom",value="Bottom"},{key="pos_center",value="Center"},{key="pos_top",value="Top"}},1,function(v) Settings.ESP.TracerStart=v end,29); MakeDropdown(EspPanel,"tracer_end",{{key="pos_bottom",value="Bottom"},{key="pos_center",value="Center"},{key="pos_top",value="Top"}},1,function(v) Settings.ESP.TracerEnd=v end,30)
@@ -796,7 +800,7 @@ MakeColorBtn(EspPanel,"box_color",Settings.ESP.BoxColor,function(c) Settings.ESP
 -- AA
 MakeToggle(AAPanel,"aa_on",false,function(v) Settings.AntiAim.Enabled=v end,1); MakeDropdown(AAPanel,"aa_mode",{{key="mode_spin",value="Spin"},{key="mode_back",value="Backward"},{key="mode_random",value="Random"},{key="mode_jitter",value="Jitter"}},1,function(v) Settings.AntiAim.Mode=v end,2); MakeSlider(AAPanel,"aa_yaw",1,100,20,"",function(v) Settings.AntiAim.YawSpeed=v end,3); MakeSlider(AAPanel,"aa_pitch",-89,89,0,"",function(v) Settings.AntiAim.Pitch=v end,4)
 
--- MISC (FIXED Hands)
+-- MISC
 MakeToggle(MiscPanel,"misc_fov_on",false,function(v) Settings.Misc.FOVEnabled=v end,1)
 MakeSlider(MiscPanel,"misc_fov",30,120,70,"",function(v) Settings.Misc.FOV=v end,2)
 MakeToggle(MiscPanel,"force_tp",false,function(v) Settings.Misc.ForceThirdPerson=v end,3)
@@ -857,11 +861,10 @@ MakeSlider(ShortcutPanel,"sc_toggle_size",20,120,50,"px",function(v) Settings.Sh
 MakeButton(ShortcutPanel,"sc_lock_all",function() scAimLockFn(true); scEspLockFn(true); scBhopLockFn(true); aimHoldBtnLocked=true; aimModeBtnLocked=true; Settings.Shortcuts.ToggleBtnLock=true end,15)
 MakeButton(ShortcutPanel,"sc_unlock_all",function() scAimLockFn(false); scEspLockFn(false); scBhopLockFn(false); aimHoldBtnLocked=false; aimModeBtnLocked=false; Settings.Shortcuts.ToggleBtnLock=false end,16)
 
--- ===== CONSOLE PANEL =====
+-- CONSOLE PANEL
 local consolePad=Instance.new("UIPadding",ConsolePanel); consolePad.PaddingTop=UDim.new(0,8); consolePad.PaddingLeft=UDim.new(0,8); consolePad.PaddingRight=UDim.new(0,8)
 local consoleTitle=Instance.new("TextLabel",ConsolePanel); consoleTitle.Size=UDim2.new(1,-16,0,24); consoleTitle.BackgroundTransparency=1; consoleTitle.Text="Console Logs"; consoleTitle.TextColor3=Color3.fromRGB(220,140,255); consoleTitle.Font=Enum.Font.GothamBold; consoleTitle.TextSize=14; consoleTitle.ZIndex=102
 
--- Console toggles row
 local consoleToggleFrame=Instance.new("Frame",ConsolePanel); consoleToggleFrame.Size=UDim2.new(1,-16,0,30); consoleToggleFrame.Position=UDim2.new(0,0,0,28); consoleToggleFrame.BackgroundTransparency=1; consoleToggleFrame.ZIndex=102
 local ctLL=Instance.new("UIListLayout",consoleToggleFrame); ctLL.FillDirection=Enum.FillDirection.Horizontal; ctLL.Padding=UDim.new(0,4); ctLL.SortOrder=Enum.SortOrder.LayoutOrder
 
@@ -891,14 +894,11 @@ local levelColors={
     ERROR=Color3.fromRGB(255,60,60),
 }
 
-local consoleLineCount=0
 local function refreshConsole()
     for _,c in ipairs(consoleOutput:GetChildren()) do if c:IsA("TextLabel") then c:Destroy() end end
-    consoleLineCount=0
     local startIdx=math.max(1, #ConsoleLog - 100)
     for i=startIdx,#ConsoleLog do
         local entry=ConsoleLog[i]
-        consoleLineCount=consoleLineCount+1
         local line=Instance.new("TextLabel",consoleOutput)
         line.Size=UDim2.new(1,-8,0,14)
         line.BackgroundTransparency=1
@@ -909,7 +909,7 @@ local function refreshConsole()
         line.TextXAlignment=Enum.TextXAlignment.Left
         line.TextWrapped=true
         line.ZIndex=103
-        line.LayoutOrder=consoleLineCount
+        line.LayoutOrder=i
     end
 end
 
@@ -919,27 +919,12 @@ consoleClearBtn.MouseButton1Click:Connect(function() ConsoleLog={}; refreshConso
 local consoleRefreshBtn=Instance.new("TextButton",ConsolePanel); consoleRefreshBtn.Size=UDim2.new(0,80,0,26); consoleRefreshBtn.Position=UDim2.new(0,86,0,308); consoleRefreshBtn.BackgroundColor3=Color3.fromRGB(90,0,200); consoleRefreshBtn.Text="Refresh"; consoleRefreshBtn.TextColor3=Color3.fromRGB(255,255,255); consoleRefreshBtn.Font=Enum.Font.GothamBold; consoleRefreshBtn.TextSize=11; consoleRefreshBtn.ZIndex=102; consoleRefreshBtn.AutoButtonColor=false; Instance.new("UICorner",consoleRefreshBtn).CornerRadius=UDim.new(0,6)
 consoleRefreshBtn.MouseButton1Click:Connect(refreshConsole)
 
--- Auto-refresh console when tab is visible
 local lastConsoleRefresh = 0
 RunService.Heartbeat:Connect(function()
-    if ConsolePanel.Visible and os.clock() - lastConsoleRefresh > 1 then
+    if ConsolePanel.Visible and os.clock() - lastConsoleRefresh > 1.5 then
         lastConsoleRefresh = os.clock()
-        refreshConsole()
+        pcall(refreshConsole)
     end
-end)
-
--- Log player joins/leaves
-Players.PlayerAdded:Connect(function(plr)
-    if Settings.ConsoleSettings.Enabled and Settings.ConsoleSettings.ShowJoins then
-        logConsole("JOIN", plr.Name .. " joined the game")
-    end
-    trackPlayerHealth(plr)
-end)
-Players.PlayerRemoving:Connect(function(plr)
-    if Settings.ConsoleSettings.Enabled and Settings.ConsoleSettings.ShowJoins then
-        logConsole("LEAVE", plr.Name .. " left the game")
-    end
-    trackedHealths[plr] = nil
 end)
 
 -- SETTINGS
@@ -970,12 +955,12 @@ execRunBtn.MouseButton1Click:Connect(function()
     local code=execInput.Text; if #code>6000 then execOutput.Text="Error: Max 6000 chars"; execOutput.TextColor3=Color3.fromRGB(255,80,80); return end
     if #code==0 then execOutput.Text="Error: Empty code"; execOutput.TextColor3=Color3.fromRGB(255,80,80); return end
     local fn,err=loadstring(code)
-    if not fn then execOutput.Text="Syntax Error: "..tostring(err); execOutput.TextColor3=Color3.fromRGB(255,80,80); logConsole("ERROR","Executor syntax error")
-    else local ok,res=pcall(fn); if ok then execOutput.Text="Success!"; execOutput.TextColor3=Color3.fromRGB(120,255,120); logConsole("INFO","Executor: code ran successfully") else execOutput.Text="Runtime Error: "..tostring(res); execOutput.TextColor3=Color3.fromRGB(255,80,80); logConsole("ERROR","Executor runtime error: "..tostring(res)) end end
+    if not fn then execOutput.Text="Syntax Error: "..tostring(err); execOutput.TextColor3=Color3.fromRGB(255,80,80); logConsole("ERROR","Syntax: "..tostring(err))
+    else local ok,res=pcall(fn); if ok then execOutput.Text="Success!"; execOutput.TextColor3=Color3.fromRGB(120,255,120); logConsole("INFO","Executor ran") else execOutput.Text="Runtime Error: "..tostring(res); execOutput.TextColor3=Color3.fromRGB(255,80,80); logConsole("ERROR","Runtime: "..tostring(res)) end end
 end)
 execClearBtn.MouseButton1Click:Connect(function() execInput.Text=""; execOutput.Text="" end)
 
--- ===== CROSSHAIR (FIXED) =====
+-- ===== CROSSHAIR =====
 local crosshairParts={}; for i=1,30 do local f=Instance.new("Frame",CrosshairContainer); f.BackgroundColor3=Color3.fromRGB(0,255,0); f.BorderSizePixel=0; f.ZIndex=55; f.Visible=false; crosshairParts[i]=f end
 local chDot=Instance.new("Frame",CrosshairContainer); chDot.BackgroundColor3=Color3.fromRGB(0,255,0); chDot.BorderSizePixel=0; chDot.AnchorPoint=Vector2.new(0.5,0.5); chDot.ZIndex=56; chDot.Visible=false; Instance.new("UICorner",chDot).CornerRadius=UDim.new(1,0)
 RunService.RenderStepped:Connect(function()
@@ -988,18 +973,11 @@ RunService.RenderStepped:Connect(function()
     local cy=math.floor(vp.Y/2)+ch.OffsetY
     local sz=ch.Size; local tk=ch.Thickness; local gap=ch.Gap; local col=ch.Color
 
-    local function drawLine(idx,x,y,w,h)
-        local f=crosshairParts[idx]; f.AnchorPoint=Vector2.new(0,0); f.Size=UDim2.new(0,w,0,h); f.Position=UDim2.new(0,x,0,y); f.Rotation=0; f.BackgroundColor3=col; f.ZIndex=55; f.Visible=true
-    end
-    local function drawOutline(srcIdx,dstIdx)
-        local s=crosshairParts[srcIdx]; local o=crosshairParts[dstIdx]; o.AnchorPoint=Vector2.new(0,0); o.Size=UDim2.new(0,s.Size.X.Offset+2,0,s.Size.Y.Offset+2); o.Position=UDim2.new(0,s.Position.X.Offset-1,0,s.Position.Y.Offset-1); o.Rotation=0; o.BackgroundColor3=Color3.fromRGB(0,0,0); o.ZIndex=54; o.Visible=true
-    end
+    local function drawLine(idx,x,y,w,h) local f=crosshairParts[idx]; f.AnchorPoint=Vector2.new(0,0); f.Size=UDim2.new(0,w,0,h); f.Position=UDim2.new(0,x,0,y); f.Rotation=0; f.BackgroundColor3=col; f.ZIndex=55; f.Visible=true end
+    local function drawOutline(srcIdx,dstIdx) local s=crosshairParts[srcIdx]; local o=crosshairParts[dstIdx]; o.AnchorPoint=Vector2.new(0,0); o.Size=UDim2.new(0,s.Size.X.Offset+2,0,s.Size.Y.Offset+2); o.Position=UDim2.new(0,s.Position.X.Offset-1,0,s.Position.Y.Offset-1); o.Rotation=0; o.BackgroundColor3=Color3.fromRGB(0,0,0); o.ZIndex=54; o.Visible=true end
 
     if ch.Style=="Cross" then
-        drawLine(1, cx-math.floor(tk/2), cy-gap-sz, tk, sz)
-        drawLine(2, cx-math.floor(tk/2), cy+gap, tk, sz)
-        drawLine(3, cx-gap-sz, cy-math.floor(tk/2), sz, tk)
-        drawLine(4, cx+gap, cy-math.floor(tk/2), sz, tk)
+        drawLine(1, cx-math.floor(tk/2), cy-gap-sz, tk, sz); drawLine(2, cx-math.floor(tk/2), cy+gap, tk, sz); drawLine(3, cx-gap-sz, cy-math.floor(tk/2), sz, tk); drawLine(4, cx+gap, cy-math.floor(tk/2), sz, tk)
         if ch.Outline then drawOutline(1,5); drawOutline(2,6); drawOutline(3,7); drawOutline(4,8) end
     elseif ch.Style=="Circle" then
         for i2=1,24 do
@@ -1012,25 +990,13 @@ RunService.RenderStepped:Connect(function()
     elseif ch.Style=="Dot" then
         chDot.Size=UDim2.new(0,sz,0,sz); chDot.Position=UDim2.new(0,cx,0,cy); chDot.BackgroundColor3=col; chDot.Visible=true; return
     elseif ch.Style=="Arrows" then
-        drawLine(1, cx-math.floor(tk/2), cy-gap-sz, tk, sz)
-        drawLine(2, cx-math.floor(sz*0.35), cy-gap-sz, math.floor(sz*0.7), tk)
-        drawLine(3, cx-math.floor(tk/2), cy+gap, tk, sz)
-        drawLine(4, cx-math.floor(sz*0.35), cy+gap+sz-tk, math.floor(sz*0.7), tk)
-        drawLine(5, cx-gap-sz, cy-math.floor(tk/2), sz, tk)
-        drawLine(6, cx-gap-sz, cy-math.floor(sz*0.35), tk, math.floor(sz*0.7))
-        drawLine(7, cx+gap, cy-math.floor(tk/2), sz, tk)
-        drawLine(8, cx+gap+sz-tk, cy-math.floor(sz*0.35), tk, math.floor(sz*0.7))
+        drawLine(1, cx-math.floor(tk/2), cy-gap-sz, tk, sz); drawLine(2, cx-math.floor(sz*0.35), cy-gap-sz, math.floor(sz*0.7), tk); drawLine(3, cx-math.floor(tk/2), cy+gap, tk, sz); drawLine(4, cx-math.floor(sz*0.35), cy+gap+sz-tk, math.floor(sz*0.7), tk); drawLine(5, cx-gap-sz, cy-math.floor(tk/2), sz, tk); drawLine(6, cx-gap-sz, cy-math.floor(sz*0.35), tk, math.floor(sz*0.7)); drawLine(7, cx+gap, cy-math.floor(tk/2), sz, tk); drawLine(8, cx+gap+sz-tk, cy-math.floor(sz*0.35), tk, math.floor(sz*0.7))
     elseif ch.Style=="Square" then
-        drawLine(1, cx-sz, cy-sz, sz*2, tk)
-        drawLine(2, cx-sz, cy+sz-tk, sz*2, tk)
-        drawLine(3, cx-sz, cy-sz, tk, sz*2)
-        drawLine(4, cx+sz-tk, cy-sz, tk, sz*2)
+        drawLine(1, cx-sz, cy-sz, sz*2, tk); drawLine(2, cx-sz, cy+sz-tk, sz*2, tk); drawLine(3, cx-sz, cy-sz, tk, sz*2); drawLine(4, cx+sz-tk, cy-sz, tk, sz*2)
         if ch.Outline then drawOutline(1,5); drawOutline(2,6); drawOutline(3,7); drawOutline(4,8) end
     end
 
-    if ch.Dot and ch.Style~="Dot" then
-        chDot.Size=UDim2.new(0,ch.DotSize,0,ch.DotSize); chDot.Position=UDim2.new(0,cx,0,cy); chDot.BackgroundColor3=col; chDot.Visible=true
-    end
+    if ch.Dot and ch.Style~="Dot" then chDot.Size=UDim2.new(0,ch.DotSize,0,ch.DotSize); chDot.Position=UDim2.new(0,cx,0,cy); chDot.BackgroundColor3=col; chDot.Visible=true end
 end)
 
 -- FOV
@@ -1062,7 +1028,7 @@ local antiAfkTimer = 0
 RunService.Heartbeat:Connect(function(dt)
     if not Settings.Misc.AntiAFK then antiAfkTimer=0; return end
     antiAfkTimer=antiAfkTimer+dt
-    if antiAfkTimer>=60 then antiAfkTimer=0; pcall(function() VirtualUser:CaptureController(); VirtualUser:ClickButton2(Vector2.new(0,0)) end); pcall(function() VirtualUser:SetKeyDown(0x77); task.wait(0.1); VirtualUser:SetKeyUp(0x77) end) end
+    if antiAfkTimer>=60 then antiAfkTimer=0; pcall(function() VirtualUser:CaptureController(); VirtualUser:ClickButton2(Vector2.new(0,0)) end) end
 end)
 pcall(function() LocalPlayer.Idled:Connect(function() if Settings.Misc.AntiAFK then pcall(function() VirtualUser:CaptureController(); VirtualUser:ClickButton2(Vector2.new(0,0)) end) end end) end)
 
@@ -1079,7 +1045,7 @@ RunService.Heartbeat:Connect(function()
     prevTPEnabled=Settings.Misc.ForceThirdPerson
 end)
 
--- HANDS (FIXED v3 - Universal with R6/R15 support, proper cleanup)
+-- HANDS
 local originalC1s = {}
 local handsConnectionChar = nil
 
@@ -1095,10 +1061,8 @@ local function isArmMotor(motor)
     local p1 = motor.Part1
     if not p1 then return false end
     local n = p1.Name
-    -- R15
     if n=="RightUpperArm" or n=="RightLowerArm" or n=="RightHand" then return true end
     if n=="LeftUpperArm" or n=="LeftLowerArm" or n=="LeftHand" then return true end
-    -- R6
     if n=="Right Arm" or n=="Left Arm" then return true end
     return false
 end
@@ -1109,25 +1073,18 @@ local function setupHandsForChar(char)
     handsConnectionChar = char
 end
 
-LocalPlayer.CharacterAdded:Connect(function(char)
-    setupHandsForChar(char)
-end)
+LocalPlayer.CharacterAdded:Connect(function(char) setupHandsForChar(char) end)
 if LocalPlayer.Character then setupHandsForChar(LocalPlayer.Character) end
 
 RunService.Heartbeat:Connect(function()
     if not Settings.Misc.HandsEnabled then return end
     local char = LocalPlayer.Character
     if not char then return end
-    if char ~= handsConnectionChar then
-        setupHandsForChar(char)
-    end
+    if char ~= handsConnectionChar then setupHandsForChar(char) end
 
-    -- Discover new arm motors
     for _, desc in ipairs(char:GetDescendants()) do
         if desc:IsA("Motor6D") and isArmMotor(desc) then
-            if not originalC1s[desc] then
-                originalC1s[desc] = desc.C1
-            end
+            if not originalC1s[desc] then originalC1s[desc] = desc.C1 end
         end
     end
 
@@ -1239,10 +1196,20 @@ local function setupPlayer(plr)
         CreateESP(plr)
     end)
 end
-Players.PlayerAdded:Connect(setupPlayer)
-Players.PlayerRemoving:Connect(function(plr) if ESPObjects[plr] then DestroyESP(ESPObjects[plr]); ESPObjects[plr]=nil end; trackedHealths[plr]=nil end)
+Players.PlayerAdded:Connect(function(plr)
+    if Settings.ConsoleSettings.Enabled and Settings.ConsoleSettings.ShowJoins then logConsole("JOIN", plr.Name.." joined") end
+    setupPlayer(plr)
+end)
+Players.PlayerRemoving:Connect(function(plr)
+    if Settings.ConsoleSettings.Enabled and Settings.ConsoleSettings.ShowJoins then logConsole("LEAVE", plr.Name.." left") end
+    if ESPObjects[plr] then DestroyESP(ESPObjects[plr]); ESPObjects[plr]=nil end
+    trackedHealths[plr]=nil
+    if healthConnections[plr] then
+        for _, conn in ipairs(healthConnections[plr]) do pcall(function() conn:Disconnect() end) end
+        healthConnections[plr]=nil
+    end
+end)
 for _,plr in ipairs(Players:GetPlayers()) do setupPlayer(plr) end
 
 retranslateAll(); updateAimBtnVis(); updateAimModeBtnVis()
-logConsole("INFO", "FLEEXI v1.4 loaded successfully! Game: " .. tostring(game.PlaceId))
-logConsole("INFO", "Players in server: " .. #Players:GetPlayers())
+logConsole("INFO", "FLEEXI v1.4.1 loaded! Players: " .. #Players:GetPlayers())
